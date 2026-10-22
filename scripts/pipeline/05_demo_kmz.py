@@ -12,6 +12,9 @@ from shapely.ops import unary_union
 rng = np.random.default_rng(42)
 S = "scripts/data/seed"
 cells = {c["h3"]: c for c in json.load(open(f"{S}/cells.json"))}
+for c in cells.values():                       # NaN (pandas) => None
+    if c["covered_area_id"] != c["covered_area_id"]:
+        c["covered_area_id"] = None
 areas = json.load(open(f"{S}/areas.json"))
 SHORT = {"Kota Jakarta Pusat": "JKP", "Kota Jakarta Selatan": "JKS", "Kota Jakarta Barat": "JKB", "Kota Jakarta Timur": "JKT",
          "Kota Jakarta Utara": "JKU", "Kota Depok": "DPK", "Kota Tangerang": "TNG", "Kota Tangerang Selatan": "TSL", "Kota Bekasi": "BKS"}
@@ -49,12 +52,16 @@ def pick_group(n, kotas=None, near_registry=False):
         g = grow(s, n, ok)
         if len(g) == n:
             return g
+    if kotas is not None:       # preferred kota is full: take room anywhere
+        return pick_group(n, None, near_registry)
     raise RuntimeError("no room")
 
 def union(group):
     return unary_union([hexpoly(h) for h in group])
 
 def ring_coords(poly):
+    if poly.geom_type == "MultiPolygon":       # non-contiguous half of a group: keep the largest piece
+        poly = max(poly.geoms, key=lambda q: q.area)
     return [[round(x, 7), round(y, 7)] for x, y in poly.exterior.coords]
 
 def feature(name, kota, coords_rings, homepass_claim):

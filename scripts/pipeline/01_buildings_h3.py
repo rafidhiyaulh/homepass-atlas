@@ -32,4 +32,4 @@ COPY (
   FROM b GROUP BY 1
 ) TO '{OUT}' (FORMAT parquet)
 """)
-print("rows", c.sql(f"select count(*), sum(buildings) from '{OUT}'").fetchone(), f"{time.time()-t0:.0f}s")
+print("rows", c.sql(f"select count(*), sum(buildings) from '{OUT}'").fetchall()[0], f"{time.time()-t0:.0f}s")

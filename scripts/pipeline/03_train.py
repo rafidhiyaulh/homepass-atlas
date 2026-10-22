@@ -24,7 +24,7 @@ FEATURES = {
     "competitors": "Competing fiber brands",
 }
 TAU = 7.0          # ramp constant fitted from the cohort curves (see profitability module)
-ARPU, FEE, UPFRONT = 255000, 100000, 400000
+ARPU, FEE, UPFRONT, SAC = 255000, 100000, 400000, 650000   # SAC: modem + install + commission per new sub
 
 f = pd.read_parquet(f"{S}/features.parquet")
 f["homepass_log"] = np.log1p(f.homepass_est)
@@ -58,10 +58,12 @@ k24 = ramp(23) / ramp(11.5)
 
 def payback(hp, takeup12):
     cap = takeup12 / ramp(11.5)
-    cum, inv = 0.0, hp * UPFRONT
+    cum, prev = -hp * UPFRONT, 0.0
     for m in range(120):
-        cum += hp * cap * ramp(m) * (ARPU - FEE)
-        if cum >= inv:
+        subs = hp * cap * ramp(m)
+        cum += subs * (ARPU - FEE) - max(0.0, subs - prev) * SAC
+        prev = subs
+        if cum >= 0:
             return m + 1
     return None
 
@@ -72,17 +74,18 @@ for i, r in f.iterrows():
     drivers = sorted(({"f": k, "label": FEATURES[k], "v": round(float(contrib[i][j]), 4), "x": round(float(Xa.iloc[i][k]), 3)}
                       for j, k in enumerate(FEATURES)), key=lambda d: -abs(d["v"]))
     # 5-year margin per cell, IDR millions -> score
-    five_y = sum(r.homepass_est * (pred[i] / ramp(11.5)) * ramp(m) * (ARPU - FEE) for m in range(60)) - r.homepass_est * UPFRONT
+    subs60 = [r.homepass_est * (pred[i] / ramp(11.5)) * ramp(m) for m in range(60)]
+    five_y = sum(s * (ARPU - FEE) for s in subs60) - subs60[-1] * SAC - r.homepass_est * UPFRONT
     out.append(dict(h3=r.h3, pred_takeup_m12=round(float(pred[i]), 4), pred_takeup_m24=round(m24, 4),
                     payback_months=pb, value_5y_m=round(five_y / 1e6, 1), drivers=drivers[:6],
                     base=round(float(contrib[i][-1]), 4), homepass=int(r.homepass_est)))
 
-# recommendation: fiber where it pays back within 3 years at scale; HiFi Air (FWA, no fiber capex)
+# recommendation: fiber where it pays back within 30 months at scale; HiFi Air (FWA, no fiber capex)
 # where demand exists but the build does not pay; otherwise hold
 for o in out:
-    if o["payback_months"] is not None and o["payback_months"] <= 36 and o["homepass"] >= 250:
+    if o["payback_months"] is not None and o["payback_months"] <= 30 and o["homepass"] >= 250:
         o["rfs_reco"] = "build"
-    elif o["pred_takeup_m12"] >= 0.08:
+    elif o["pred_takeup_m12"] >= 0.07:
         o["rfs_reco"] = "fwa"
     else:
         o["rfs_reco"] = "hold"

@@ -39,7 +39,7 @@ for r in b.itertuples():
     k = next((k for k, g in kota_prep.items() if g.contains(Point(lng, lat))), None)
     if k is None or r.buildings < 40:
         continue
-    medium_m2 = float(r.medium_m2 or 0)
+    medium_m2 = 0.0 if pd.isna(r.medium_m2) else float(r.medium_m2)
     # home-pass heuristic: small footprints ~ one household each; mid-size buildings (MDU, ruko blocks,
     # apartments) ~ half residential, one unit per 120 m2 of footprint, assuming ~3 floors
     hp = int(round(r.small * 0.9 + medium_m2 * 0.5 * 3 / 120))

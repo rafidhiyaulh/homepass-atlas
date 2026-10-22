@@ -46,6 +46,8 @@ with psycopg.connect(url, prepare_threshold=None, autocommit=False) as con, con.
     rows = []
     for c in cells:
         s = scores[c["h3"]]
+        cid = c["covered_area_id"]
+        c["covered_area_id"] = None if cid is None or cid != cid else int(cid)     # NaN from pandas => None
         covered = c["covered_area_id"] is not None
         rows.append(dict(c, g=json.dumps(c["geom"]), p12=s["pred_takeup_m12"], p24=s["pred_takeup_m24"],
                          drivers=Jsonb({"base": s["base"], "items": s["drivers"]}),
