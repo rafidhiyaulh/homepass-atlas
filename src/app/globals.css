@@ -193,6 +193,7 @@ table.data th {
   padding: 9px 10px; border-bottom: 2px solid var(--th-rule); white-space: nowrap; position: sticky; top: 0; background: var(--panel);
 }
 table.data th.num, table.data td.num { text-align: right; }
+table.data td.num { white-space: nowrap; }
 table.data td { padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
 table.data tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--panel-alt) 55%, transparent); }
 table.data tbody tr.clickable { cursor: pointer; }

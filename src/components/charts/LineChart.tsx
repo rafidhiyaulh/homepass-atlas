@@ -54,7 +54,7 @@ export function LineChart({
             <text x={m.l - 8} y={y(t)} dy="0.32em" textAnchor="end" fontSize={11} fill="var(--muted)">{yFormat(t)}</text>
           </g>
         ))}
-        {x.ticks(8).map(t => (
+        {x.ticks(Math.max(3, Math.floor(w / 90))).map(t => (
           <text key={t} x={x(t)} y={height - m.b + 16} textAnchor="middle" fontSize={11} fill="var(--muted)">{xFormat(t)}</text>
         ))}
         {xLabel && <text x={(m.l + w - m.r) / 2} y={height - 3} textAnchor="middle" fontSize={11} fill="var(--muted)">{xLabel}</text>}
