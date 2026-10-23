@@ -21,7 +21,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
         from atlas.boundaries where batch_id = ${id} order by seq` : []
       const conflicts = batch.status === 'done' ? await tx`
         select c.a_id, a.name as a_name, c.b_kind, c.b_id,
-               case when c.b_kind = 'batch' then b.name else 'Registry area #' || c.b_id end as b_name,
+               case when c.b_kind = 'batch' then b.name else 'Live area #' || c.b_id end as b_name,
                c.kind, round(c.overlap_m2) as overlap_m2, c.homepass_dup
         from atlas.conflicts c join atlas.boundaries a on a.id = c.a_id
         left join atlas.boundaries b on c.b_kind = 'batch' and b.id = c.b_id

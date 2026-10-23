@@ -6,26 +6,26 @@ export function Badge({ tone, children, title }: { tone: Tone; children: React.R
 
 // Boundary statuses: icon glyph + label + colour, never colour alone
 export const STATUS: Record<string, { tone: Tone; label: string; icon: string; help: string }> = {
-  clean:     { tone: 'good',    label: 'Clean',          icon: '✓', help: 'No contact with any other polygon' },
-  touch:     { tone: 'low',     label: 'Touch only',     icon: '◇', help: 'Shares an edge/corner, no shared area' },
-  sliver:    { tone: 'warn',    label: 'Sliver',         icon: '≈', help: 'Shares less than the sliver threshold (digitising noise)' },
-  overlap:   { tone: 'serious', label: 'Overlap',        icon: '▲', help: 'Shares area with another polygon or the registry' },
-  duplicate: { tone: 'bad',     label: 'Duplicate',      icon: '■', help: 'Same footprint submitted more than once' },
-  invalid:   { tone: 'bad',     label: 'Self-intersect', icon: '✕', help: 'Ring crosses itself (invalid geometry)' },
+  clean:     { tone: 'good',    label: 'Clean',          icon: '✓', help: 'Shares no ground with any other shape' },
+  touch:     { tone: 'low',     label: 'Border only',    icon: '◇', help: 'Shares a border line but no ground, still clean' },
+  sliver:    { tone: 'warn',    label: 'Sliver',         icon: '≈', help: 'A tiny overlap, most likely a drawing mistake' },
+  overlap:   { tone: 'serious', label: 'Overlap',        icon: '▲', help: 'Covers ground that another shape also covers' },
+  duplicate: { tone: 'bad',     label: 'Duplicate',      icon: '■', help: 'The same shape was sent twice' },
+  invalid:   { tone: 'bad',     label: 'Broken shape',   icon: '✕', help: 'The outline crosses itself, so the shape is invalid' },
 }
 
 export const ACTION: Record<string, { tone: Tone; label: string; icon: string }> = {
-  maintain: { tone: 'good', label: 'Maintain', icon: '✓' },
-  optimize: { tone: 'warn', label: 'Optimize', icon: '▲' },
+  maintain: { tone: 'good', label: 'Keep', icon: '✓' },
+  optimize: { tone: 'warn', label: 'Fix', icon: '▲' },
   exit:     { tone: 'bad', label: 'Exit', icon: '✕' },
-  ramping:  { tone: 'neutral', label: 'Ramping', icon: '…' },
+  ramping:  { tone: 'neutral', label: 'Too early', icon: '…' },
 }
 
 export const RECO: Record<string, { tone: Tone; label: string }> = {
   build: { tone: 'brand', label: 'Build fiber' },
-  fwa: { tone: 'low', label: 'HiFi Air (FWA)' },
-  hold: { tone: 'neutral', label: 'Hold' },
-  covered: { tone: 'neutral', label: 'Covered' },
+  fwa: { tone: 'low', label: 'Offer HiFi Air' },
+  hold: { tone: 'neutral', label: 'Wait' },
+  covered: { tone: 'neutral', label: 'Has fiber' },
 }
 
 export function StatusBadge({ status }: { status: string | null }) {

@@ -6,6 +6,7 @@ import { Download, UploadCloud } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase/browser'
 import { Badge, PartnerDot } from '@/components/Badge'
 import { fmtInt } from '@/lib/format'
+import { Term } from '@/components/Help'
 
 type Partner = { id: number; code: string; name: string }
 type Batch = {
@@ -63,13 +64,13 @@ export function HygieneHome({ partners, role, myPartner }: { partners: Partner[]
   return (
     <div className="cols-2">
       <section className="card">
-        <div className="card-head"><div><h2 className="card-title">Checked submissions</h2><div className="card-sub">Newest first. Re-uploading an identical file returns the earlier result (SHA-256).</div></div></div>
+        <div className="card-head"><div><h2 className="card-title">Checked files</h2><div className="card-sub">Newest first. Same file twice reuses the result.</div></div></div>
         <div className="table-wrap" style={{ marginTop: 10 }}>
           <table className="data">
-            <thead><tr><th>File</th><th>Partner</th><th>Status</th><th className="num">Polygons</th><th>Result</th><th>Uploaded</th></tr></thead>
+            <thead><tr><th>File</th><th>Partner</th><th>Status</th><th className="num">Shapes</th><th>Result</th><th>Uploaded</th></tr></thead>
             <tbody>
               {batches === null && <tr><td colSpan={6}><div className="skeleton" style={{ height: 18 }} /></td></tr>}
-              {batches?.length === 0 && <tr><td colSpan={6} className="muted">Nothing checked yet. Upload one of the sample KMZ files to start.</td></tr>}
+              {batches?.length === 0 && <tr><td colSpan={6} className="muted">Nothing yet. Try a sample file on the right.</td></tr>}
               {batches?.map(b => {
                 const s = b.stats?.by_status ?? {}
                 const clean = (s.clean ?? 0) + (s.touch ?? 0)
@@ -77,9 +78,9 @@ export function HygieneHome({ partners, role, myPartner }: { partners: Partner[]
                   <tr key={b.id} className="clickable" onClick={() => router.push(`/hygiene/${b.id}`)}>
                     <td><Link href={`/hygiene/${b.id}`} onClick={e => e.stopPropagation()} className="strong" style={{ color: 'var(--ink)' }}>{b.filename}</Link></td>
                     <td>{b.partner_id ? <PartnerDot id={b.partner_id} code={b.partner_code ?? ''} /> : '-'}</td>
-                    <td><Badge tone={BATCH_TONE[b.status] ?? 'neutral'}>{b.status === 'processing' ? `processing ${b.shards_done}/${b.shards_total}` : b.status}</Badge></td>
+                    <td><Badge tone={BATCH_TONE[b.status] ?? 'neutral'}>{b.status === 'processing' ? `checking ${b.shards_done} of ${b.shards_total}` : b.status}</Badge></td>
                     <td className="num">{fmtInt(b.polygons)}</td>
-                    <td className="small">{b.status === 'done' ? <><span className="strong">{clean}</span> clean · <span className="strong">{b.polygons - clean}</span> with issues</> : b.error ? <span style={{ color: 'var(--crit)' }}>{b.error}</span> : '…'}</td>
+                    <td className="small">{b.status === 'done' ? <><span className="strong">{clean}</span> clean, <span className="strong">{b.polygons - clean}</span> to fix</> : b.error ? <span style={{ color: 'var(--crit)' }}>{b.error}</span> : '…'}</td>
                     <td className="small muted">{new Date(b.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
                   </tr>
                 )
@@ -90,19 +91,19 @@ export function HygieneHome({ partners, role, myPartner }: { partners: Partner[]
       </section>
 
       <section className="card">
-        <div className="card-head"><div><h2 className="card-title">Check a KMZ</h2><div className="card-sub">.kmz or .kml, up to 20 MB and 5,000 polygons.</div></div></div>
+        <div className="card-head"><div><h2 className="card-title">Check a KMZ</h2><div className="card-sub">A .kmz or .kml file, up to 20 MB.</div></div></div>
         <div className="card-pad stack">
-          {!canUpload && <div className="note">Viewer accounts can read results but not upload.</div>}
+          {!canUpload && <div className="note">Viewers can read results but not upload.</div>}
           <div className="row">
-            <label className="small strong" htmlFor="partner" style={{ width: 120 }}>Submitted by</label>
+            <label className="small strong" htmlFor="partner" style={{ width: 130 }}>From partner</label>
             <select id="partner" className="select" value={partnerId} disabled={role === 'partner' || !canUpload} onChange={e => setPartnerId(Number(e.target.value))} style={{ flex: 1 }}>
-              {partners.map(p => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}
+              {partners.map(p => <option key={p.id} value={p.id}>{p.name} ({p.code})</option>)}
             </select>
           </div>
           <div className="row">
-            <label className="small strong" htmlFor="sliver" style={{ width: 120 }}>Sliver threshold</label>
+            <label className="small strong" htmlFor="sliver" style={{ width: 130 }}>Ignore overlaps under</label>
             <input id="sliver" className="input" type="number" min={0} max={20000} step={50} value={sliver} disabled={!canUpload} onChange={e => setSliver(Number(e.target.value))} style={{ width: 110 }} />
-            <span className="small muted">m² of shared area treated as digitising noise</span>
+            <span className="small muted">m², treated as a <Term k="sliver">sliver</Term></span>
           </div>
           <div
             className={`drop${drag ? ' on' : ''}`}
@@ -115,13 +116,13 @@ export function HygieneHome({ partners, role, myPartner }: { partners: Partner[]
           >
             <UploadCloud size={26} style={{ color: 'var(--accent)' }} />
             <div className="strong" style={{ marginTop: 6 }}>{busy ?? 'Drop a KMZ here or click to choose'}</div>
-            <div className="small muted">Stored privately; parsed with zip-bomb and XXE guards.</div>
+            <div className="small muted">Stored privately and scanned for unsafe content.</div>
             <input ref={input} type="file" accept=".kmz,.kml" hidden onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
           </div>
           {error && <p role="alert" style={{ color: 'var(--crit)', fontWeight: 600 }}>{error}</p>}
           <div className="hr" />
-          <div className="small strong">Sample partner submissions</div>
-          <div className="small muted">Fictional partners. Mostly plausible rollout polygons, with planted defects of every kind.</div>
+          <div className="small strong">Sample files</div>
+          <div className="small muted">Fictional partners, with every kind of mistake planted in.</div>
           <div className="row">
             <a className="btn btn-sm" href="/samples/NSF_Q4-2026_rollout.kmz" download><Download size={13} /> NSF_Q4-2026_rollout.kmz</a>
             <a className="btn btn-sm" href="/samples/JOP_Q4-2026_rollout.kmz" download><Download size={13} /> JOP_Q4-2026_rollout.kmz</a>

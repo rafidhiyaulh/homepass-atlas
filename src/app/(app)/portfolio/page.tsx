@@ -1,6 +1,7 @@
 import { requireMe } from '@/lib/auth'
 import { asUser } from '@/lib/db'
 import { PortfolioView } from './PortfolioView'
+import { Explainer } from '@/components/Explain'
 
 export const metadata = { title: 'Portfolio actions' }
 
@@ -15,14 +16,16 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Performance monitoring · portfolio optimization</div>
+          <div className="eyebrow">Deciding what to do with each area</div>
           <h1 className="page-title">Portfolio actions</h1>
-          <p className="page-sub">
-            Every RFS area gets maintain, optimize or exit from transparent rules on take-up vs plan, projected payback and churn.
-            Open an area for the root cause and the levers; Gemini can turn that into a short note for management.
-          </p>
+          <p className="page-sub">Keep, fix or exit, for every live area.</p>
         </div>
       </div>
+      <Explainer
+        question="Which areas do we keep, fix or exit?"
+        read="Pick a group, then click an area. See the cause and the fix."
+        why="Weak areas take money from good ones."
+      />
       <PortfolioView areas={areas as never} />
     </>
   )

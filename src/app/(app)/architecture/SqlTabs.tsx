@@ -52,6 +52,12 @@ from b a order by status;
 -- shared area in m2: ST_Area_Spheroid(ST_Intersection(a.geom, x.geom))`,
 }
 
+const WHY: Record<string, string> = {
+  PostGIS: 'The database behind this app. It runs the real check.',
+  'BigQuery GIS': 'Google\'s data warehouse, common in telco data teams.',
+  DuckDB: 'Runs on a laptop, no setup. Ideal for quick tests.',
+}
+
 export function SqlTabs() {
   const [k, setK] = useState('PostGIS')
   return (
@@ -59,11 +65,16 @@ export function SqlTabs() {
       <div className="seg" role="tablist">
         {Object.keys(SQL).map(t => <button key={t} role="tab" aria-selected={k === t} className={k === t ? 'on' : ''} onClick={() => setK(t)}>{t}</button>)}
       </div>
-      <pre className="pre" style={{ marginTop: 10 }}>{SQL[k]}</pre>
-      <p className="small muted" style={{ marginTop: 8 }}>
-        Questions to settle with the business first: does a shared edge count as an intersection (strict vs lenient)? What overlap is digitising noise
-        (a sliver threshold in m², measured geodesically, not in degrees)? And is the check within one file, or against the live registry too?
-      </p>
+      <p className="small strong" style={{ marginTop: 10 }}>{WHY[k]}</p>
+      <pre className="pre" style={{ marginTop: 8 }}>{SQL[k]}</pre>
+      <div className="small muted" style={{ marginTop: 8 }}>
+        <div className="strong" style={{ color: 'var(--ink2)' }}>Ask the business first:</div>
+        <ul style={{ margin: '4px 0 0 18px' }}>
+          <li>Does a shared border count as a clash?</li>
+          <li>How small is a drawing mistake, in m²?</li>
+          <li>Check within the file, or against live areas too?</li>
+        </ul>
+      </div>
     </>
   )
 }

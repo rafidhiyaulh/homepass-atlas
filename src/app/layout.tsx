@@ -6,7 +6,7 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-jakart
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', weight: ['400', '600'] })
 
 export const metadata: Metadata = {
-  title: { default: 'HomePass Atlas', template: '%s · HomePass Atlas' },
+  title: { default: 'HomePass Atlas', template: '%s | HomePass Atlas' },
   description: 'HBB market planning & insight: boundary hygiene, RFS desktop study, profitability and portfolio actions. Concept prototype.',
   robots: { index: false, follow: false },
 }

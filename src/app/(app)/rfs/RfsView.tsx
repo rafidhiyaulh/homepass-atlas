@@ -6,6 +6,13 @@ import { Map, type Layer } from '@/components/Map'
 import { Badge, RECO } from '@/components/Badge'
 import { Kpi } from '@/components/Kpi'
 import { fmtInt, fmtPct, months } from '@/lib/format'
+import { InfoTip, Term } from '@/components/Help'
+
+// plain names for the model's inputs
+const FEATURE: Record<string, string> = {
+  homepass_log: 'Number of homes', avg_home_m2: 'House size', density: 'How built-up', mdu_share: 'Share of apartments',
+  large_share: 'Industrial land', dist_cbd_km: 'Distance to city centre', competitors: 'Competing fiber brands',
+}
 
 type Driver = { f: string; label: string; v: number; x: number }
 type Cell = {
@@ -39,7 +46,7 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
       shapes: open.map(c => ({
         id: c.h3, geom: c.geom, cls: `p-seq-${band(c.score)}`,
         fillOpacity: shownSet.has(c.h3) ? 0.62 : 0.12, weight: shownSet.has(c.h3) ? 0.6 : 0.2,
-        tip: `${KOTA_SHORT(c.kota)} · score ${c.score.toFixed(0)} · ${fmtInt(c.homepass_est)} HP · take-up M12 ${fmtPct(c.p12)} · ${RECO[c.reco].label}`,
+        tip: [KOTA_SHORT(c.kota), `Score ${c.score.toFixed(0)} of 100`, `${fmtInt(c.homepass_est)} homes`, `${fmtPct(c.p12)} expected to buy in year 1`, RECO[c.reco].label],
       })),
     },
   ], [cells, open, shownSet, kota])
@@ -54,62 +61,62 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
   return (
     <>
       <div className="kpis">
-        <Kpi label="Candidate cells" value={fmtInt(shown.length)} sub={`${RECO[reco]?.label ?? 'All uncovered'}${kota !== 'all' ? ` · ${KOTA_SHORT(kota)}` : ''}`} accent="var(--brand)" />
-        <Kpi label="Home-passes in scope" value={fmtInt(tot.hp)} sub="estimated from building footprints" accent="var(--ink)" />
-        <Kpi label="Subscribers at month 24" value={fmtInt(tot.subs)} sub={`implied take-up ${fmtPct(tot.subs / Math.max(1, tot.hp))}`} accent="var(--ink)" />
-        <Kpi label="Model error (CV)" value={`${(Number(m.mae) * 100).toFixed(1)} pp`} sub={`MAE on take-up, ${fmtPct(Number(m.mae_lift_vs_mean), 0)} better than the average`} accent="var(--chart-good)" />
+        <Kpi label="Neighbourhoods shown" term="hex" value={fmtInt(shown.length)} sub={`${RECO[reco]?.label ?? 'All without fiber'}${kota !== 'all' ? `, ${KOTA_SHORT(kota)}` : ''}`} accent="var(--brand)" />
+        <Kpi label="Homes in them" term="homepass" value={fmtInt(tot.hp)} sub="counted from real building outlines" accent="var(--ink)" />
+        <Kpi label="Customers after 2 years" value={fmtInt(tot.subs)} sub={`${fmtPct(tot.subs / Math.max(1, tot.hp))} of those homes`} accent="var(--ink)" />
+        <Kpi label="Prediction accuracy" help="Average gap between predicted and actual take-up, tested on areas the model never saw." value={`±${(Number(m.mae) * 100).toFixed(1)} pts`} sub={`${fmtPct(Number(m.mae_lift_vs_mean), 0)} better than guessing the average`} accent="var(--chart-good)" />
       </div>
 
       <section className="card" style={{ marginBottom: 14 }}>
         <div className="card-head">
-          <div><h2 className="card-title">Opportunity map</h2><div className="card-sub">Darker = higher 5-year value. Grey = already covered by the registry. Click a cell for the why.</div></div>
+          <div><h2 className="card-title">Opportunity map</h2><div className="card-sub">Darker means more value over 5 years. Grey already has our fiber.</div></div>
           <div className="toolbar">
             <div className="seg" role="group" aria-label="Recommendation">
               {(['build', 'fwa', 'hold', 'all'] as const).map(r => (
                 <button key={r} className={reco === r ? 'on' : ''} onClick={() => setReco(r)}>
-                  {r === 'all' ? 'All' : RECO[r].label} {open.filter(c => r === 'all' || c.reco === r).length}
+                  {r === 'all' ? 'All' : RECO[r].label} ({open.filter(c => r === 'all' || c.reco === r).length})
                 </button>
               ))}
             </div>
             <select className="select" value={kota} onChange={e => setKota(e.target.value)} aria-label="Kota">
-              <option value="all">All kota</option>
+              <option value="all">All cities</option>
               {kotas.map(k => <option key={k} value={k}>{KOTA_SHORT(k)}</option>)}
             </select>
-            <a className="btn" href={`/api/rfs/export?reco=${reco}&kota=${encodeURIComponent(kota)}`}><Download size={14} /> KMZ for field survey</a>
+            <a className="btn" href={`/api/rfs/export?reco=${reco}&kota=${encodeURIComponent(kota)}`}><Download size={14} /> KMZ for site survey</a>
           </div>
         </div>
         <div style={{ position: 'relative', marginTop: 12 }}>
           <Map layers={layers} selected={sel} onSelect={(l, id) => l === 'open' && setSel(String(id))} fitLayer="open" fitKey={kota} />
           {s && (
             <div className="card card-pad" style={{ position: 'absolute', top: 12, right: 12, width: 340, zIndex: 500, maxHeight: 490, overflowY: 'auto' }}>
-              <div className="row between"><span className="strong">{KOTA_SHORT(s.kota)} <span className="mono small muted">{s.h3}</span></span><button className="btn btn-ghost btn-sm" onClick={() => setSel(null)} aria-label="Close">✕</button></div>
-              <div className="row" style={{ margin: '6px 0' }}><Badge tone={RECO[s.reco].tone}>{RECO[s.reco].label}</Badge><span className="small muted">score {s.score.toFixed(0)} / 100</span></div>
+              <div className="row between"><span className="strong">{KOTA_SHORT(s.kota)}</span><button className="btn btn-ghost btn-sm" onClick={() => setSel(null)} aria-label="Close">✕</button></div>
+              <div className="row" style={{ margin: '6px 0' }}><Badge tone={RECO[s.reco].tone}>{RECO[s.reco].label}</Badge><span className="small muted">score {s.score.toFixed(0)} of 100</span></div>
               <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 6, margin: '8px 0' }}>
-                <Stat k="Home-passes" v={fmtInt(s.homepass_est)} />
+                <Stat k="Homes" v={fmtInt(s.homepass_est)} />
                 <Stat k="Buildings" v={fmtInt(s.buildings)} />
-                <Stat k="Take-up M12" v={fmtPct(s.p12)} />
-                <Stat k="Take-up M24" v={fmtPct(s.p24)} />
-                <Stat k="Payback" v={months(s.payback)} />
+                <Stat k="Buy in year 1" v={fmtPct(s.p12)} />
+                <Stat k="Buy in year 2" v={fmtPct(s.p24)} />
+                <Stat k="Earns back in" v={months(s.payback)} />
                 <Stat k="Competitors" v={String(s.competitors)} />
               </div>
-              <div className="small strong" style={{ marginTop: 6 }}>Why this take-up (SHAP, vs the average cell)</div>
+              <div className="small strong" style={{ marginTop: 6 }}>What drives this prediction<InfoTip k="shap" /></div>
               <Drivers d={s.drivers} />
             </div>
           )}
         </div>
         <div className="legend">
-          <span className="k">5-year value:</span>
+          <span className="k">Value:</span>
           {['lowest', '', '', '', 'highest'].map((l, i) => <span key={i} className="k"><span className="sw" style={{ background: `var(--seq-${i})` }} />{l}</span>)}
-          <span className="k"><span className="sw" style={{ background: 'var(--chart-neutral)', opacity: 0.5 }} /> Covered (registry)</span>
+          <span className="k"><span className="sw" style={{ background: 'var(--chart-neutral)', opacity: 0.5 }} /> Already has our fiber</span>
         </div>
       </section>
 
       <div className="cols-2">
         <section className="card">
-          <div className="card-head"><div><h2 className="card-title">Ranked candidates</h2><div className="card-sub">Top {Math.min(40, shown.length)} by 5-year value. Click to locate.</div></div></div>
+          <div className="card-head"><div><h2 className="card-title">Best places first</h2><div className="card-sub">Top {Math.min(40, shown.length)} by value. Click a row to find it.</div></div></div>
           <div className="table-wrap" style={{ maxHeight: 560, marginTop: 10 }}>
             <table className="data">
-              <thead><tr><th>#</th><th>Kota</th><th className="num">HP</th><th className="num">Take-up M12</th><th className="num">M24 subs</th><th className="num">Payback</th><th>Recommendation</th><th className="num">Score</th></tr></thead>
+              <thead><tr><th>#</th><th>City</th><th className="num">Homes</th><th className="num">Buy in year 1</th><th className="num">Customers yr 2</th><th className="num"><Term k="payback">Earns back</Term></th><th>Advice</th><th className="num">Score</th></tr></thead>
               <tbody>
                 {shown.slice(0, 40).map((c, i) => (
                   <tr key={c.h3} className={`clickable${sel === c.h3 ? ' is-sel' : ''}`} onClick={() => setSel(c.h3)}>
@@ -128,27 +135,31 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
           </div>
         </section>
         <section className="card card-pad">
-          <h2 className="card-title">Model card</h2>
-          <div className="small muted" style={{ marginTop: 2 }}>{model.model} · target: {model.target}</div>
+          <h2 className="card-title">About the prediction</h2>
+          <div className="small muted" style={{ marginTop: 2 }}>A model learns from areas already selling. It predicts year-one take-up for new places.</div>
           <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 8, margin: '12px 0' }}>
-            <Stat k="Validation" v={String(m.cv)} />
-            <Stat k="Training rows" v={`${m.n_train} cells / ${m.n_areas} areas`} />
-            <Stat k="MAE" v={`${(Number(m.mae) * 100).toFixed(1)} pp (mean-only ${(Number(m.mae_baseline) * 100).toFixed(1)} pp)`} />
-            <Stat k="R²" v={String(m.r2)} />
+            <Stat k="Learned from" v={`${m.n_train} neighbourhoods in ${m.n_areas} areas`} />
+            <Stat k="Tested on" v="areas it never saw" />
+            <Stat k="Average miss" v={`±${(Number(m.mae) * 100).toFixed(1)} points`} />
+            <Stat k="Guessing the average" v={`±${(Number(m.mae_baseline) * 100).toFixed(1)} points`} />
           </div>
-          <div className="small strong">What the model leans on (gain share)</div>
+          <div className="small strong">What matters most</div>
           <div className="stack" style={{ marginTop: 8 }}>
             {model.importance.map(f => (
               <div key={f.feature}>
-                <div className="row between small"><span>{f.label}</span><span className="strong">{fmtPct(f.gain, 0)}</span></div>
+                <div className="row between small"><span>{FEATURE[f.feature] ?? f.label}</span><span className="strong">{fmtPct(f.gain, 0)}</span></div>
                 <div className="bar-track"><div style={{ width: `${f.gain * 100}%`, height: '100%', background: 'var(--seq-3)', borderRadius: '0 3px 3px 0' }} /></div>
               </div>
             ))}
           </div>
           <div className="note" style={{ marginTop: 14 }}>
-            Cross-validation groups cells by RFS area, so cells from the same launch never sit on both sides of a split (the same leakage guard as a
-            time-series split). Labels are synthetic but generated from a known process over real building data; predictions correlate {String(m.corr_with_true_ceiling)} with
-            the hidden true ceiling. Economics: ARPU Rp 255K, partner fee Rp 100K/sub, upfront Rp 400K/home-pass, acquisition Rp 650K/new sub.
+            <div className="strong">Money assumptions</div>
+            <ul style={{ margin: '4px 0 0 18px' }}>
+              <li>Customer pays Rp 255K a month.</li>
+              <li>Partner fee is Rp 100K per customer.</li>
+              <li>Building costs Rp 400K per home.</li>
+              <li>Installing a customer costs Rp 650K.</li>
+            </ul>
           </div>
         </section>
       </div>
@@ -170,8 +181,8 @@ function Drivers({ d }: { d: { base: number; items: Driver[] } }) {
   return (
     <div className="stack" style={{ marginTop: 8 }}>
       {d.items.map(i => (
-        <div key={i.f} title={`${i.label} = ${fmtX(i)}: ${i.v >= 0 ? '+' : ''}${(i.v * 100).toFixed(1)} pp`}>
-          <div className="row between small"><span>{i.label} <span className="muted">({fmtX(i)})</span></span><span className="strong">{i.v >= 0 ? '+' : ''}{(i.v * 100).toFixed(1)} pp</span></div>
+        <div key={i.f}>
+          <div className="row between small"><span>{FEATURE[i.f] ?? i.label} <span className="muted">({fmtX(i)})</span></span><span className="strong">{i.v >= 0 ? '+' : ''}{(i.v * 100).toFixed(1)} pts</span></div>
           <div style={{ display: 'flex', height: 8, marginTop: 2 }}>
             <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>{i.v < 0 && <div style={{ width: `${(-i.v / max) * 100}%`, background: 'var(--low)', borderRadius: '4px 0 0 4px' }} />}</div>
             <div style={{ width: 1, background: 'var(--rule2)' }} />
@@ -180,9 +191,9 @@ function Drivers({ d }: { d: { base: number; items: Driver[] } }) {
         </div>
       ))}
       <div className="legend" style={{ padding: 0 }}>
-        <span className="k"><span className="sw" style={{ background: 'var(--brand)' }} /> raises take-up</span>
-        <span className="k"><span className="sw" style={{ background: 'var(--low)' }} /> lowers take-up</span>
-        <span className="k muted">average cell {fmtPct(d.base)}</span>
+        <span className="k"><span className="sw" style={{ background: 'var(--brand)' }} /> pushes up</span>
+        <span className="k"><span className="sw" style={{ background: 'var(--low)' }} /> pushes down</span>
+        <span className="k muted">starting from {fmtPct(d.base)}</span>
       </div>
     </div>
   )

@@ -44,21 +44,21 @@ export async function areaFacts(tx: Tx, id: number): Promise<Facts | null> {
 export function diagnose(f: Facts) {
   const drivers: { driver: string; evidence: string; lever: string }[] = []
   if (f.peer_takeup_pct != null && f.takeup_pct < f.peer_takeup_pct * 0.8)
-    drivers.push({ driver: 'Converts worse than its peers', evidence: `take-up ${f.takeup_pct}% vs ${f.peer_takeup_pct}% for the same partner or kota`, lever: 'Door-to-door sales sprint and an RFS awareness campaign in the cluster' })
+    drivers.push({ driver: 'Sells worse than similar areas', evidence: `${f.takeup_pct}% buy here, ${f.peer_takeup_pct}% in similar areas`, lever: 'Door-to-door sales push and a local campaign' })
   if (f.competitors_avg >= 3)
-    drivers.push({ driver: 'Crowded market', evidence: `${f.competitors_avg} fiber brands present on average`, lever: 'Bundle with Indosat mobile (FMC) or a local price response instead of a broad discount' })
+    drivers.push({ driver: 'Many competitors', evidence: `${f.competitors_avg} fiber brands present on average`, lever: 'Bundle with Indosat mobile, or price locally' })
   if (f.mdu_share_pct >= 25)
-    drivers.push({ driver: 'High-rise / MDU heavy', evidence: `${f.mdu_share_pct}% of footprint in mid-size buildings`, lever: 'Building-access deals with property managers; in-building partner coverage check' })
+    drivers.push({ driver: 'Lots of apartments', evidence: `${f.mdu_share_pct}% of buildings are mid-size`, lever: 'Agree building access with property managers' })
   if (f.peer_churn_pct != null && f.churn_pct > f.peer_churn_pct * 1.25)
-    drivers.push({ driver: 'Churn above peers', evidence: `${f.churn_pct}% monthly vs ${f.peer_churn_pct}%`, lever: 'Partner SLA review (outage and install times) and a retention offer at month 10-12' })
+    drivers.push({ driver: 'Customers cancel more often', evidence: `${f.churn_pct}% cancel monthly, ${f.peer_churn_pct}% elsewhere`, lever: 'Check partner outages. Offer a loyalty deal.' })
   if (f.margin_month_idr <= 0)
-    drivers.push({ driver: 'Negative contribution', evidence: 'monthly margin is below zero', lever: 'Renegotiate the partner fee or stop acquisition spend' })
+    drivers.push({ driver: 'Losing money each month', evidence: 'costs are higher than revenue', lever: 'Renegotiate the fee or pause new sales' })
   if (!drivers.length)
-    drivers.push({ driver: 'No single driver stands out', evidence: 'peers, competition and churn are all near normal', lever: 'Keep monitoring; check field feedback for local causes' })
+    drivers.push({ driver: 'No single cause stands out', evidence: 'Competition and cancellations look normal', lever: 'Ask the field team for local reasons' })
   const verdict =
-    f.action === 'exit' ? `Exit: take-up is ${f.vs_plan_pct}% of plan after ${f.age_months} months and the area ${f.payback_months == null ? 'does not pay back at today\'s margin' : `needs ${f.payback_months} months to pay back`}.`
-      : f.action === 'optimize' ? `Optimize: take-up is ${f.vs_plan_pct}% of plan at month ${f.age_months}${f.payback_months != null ? `, payback ${f.payback_months} months` : ''}.`
-        : f.action === 'maintain' ? `Maintain: take-up is ${f.vs_plan_pct}% of plan at month ${f.age_months}.`
-          : `Ramping: only ${f.age_months} months since RFS, too early to judge.`
+    f.action === 'exit' ? `Exit. Only ${f.vs_plan_pct}% of plan after ${f.age_months} months${f.payback_months == null ? ', never earns back.' : `, earns back in ${f.payback_months} months.`}`
+      : f.action === 'optimize' ? `Fix. ${f.vs_plan_pct}% of plan after ${f.age_months} months.`
+        : f.action === 'maintain' ? `Keep. ${f.vs_plan_pct}% of plan after ${f.age_months} months.`
+          : `Too early. Live for only ${f.age_months} months.`
   return { verdict, drivers }
 }

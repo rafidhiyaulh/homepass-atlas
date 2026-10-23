@@ -21,10 +21,10 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     const text = await chat([
       { role: 'system', content: 'You are a telecom home-broadband market planning analyst at Indosat. Write for the Head of HBB Market Planning. Plain English, no hype, no markdown headings.' },
       { role: 'user', content:
-        'Write at most 80 words in 3 to 4 short sentences: the verdict, the most likely root cause, and the first two actions. ' +
+        'Write exactly 2 short, friendly sentences, at most 10 words each. First: the verdict and main cause. Second: the first action. ' +
         'Use ONLY the facts in the JSON. Do not invent numbers, dates, competitors or partners. Keep percentages exactly as given.\n' +
         JSON.stringify(source) },
-    ], { maxTokens: 400 })
+    ], { maxTokens: 200 })
     if (!text) return Response.json({ text: null, grounded: false, model: null, reason: 'llm_unavailable' })
     const g = grounded(text, source)
     await asUser(me, tx => tx`select atlas.audit('llm.narrative', ${facts.code}, ${tx.json({ grounded: g.ok, unexplained: g.unexplained } as never)})`)

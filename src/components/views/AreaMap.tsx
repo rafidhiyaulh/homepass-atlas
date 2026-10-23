@@ -13,7 +13,7 @@ export function AreaMap({ areas, partners, height = 460 }: { areas: AreaGeo[]; p
     id: 'areas',
     shapes: areas.map(a => ({
       id: a.id, geom: a.geom, cls: by === 'partner' ? `p-partner-${a.partner_id}` : `p-${a.action}`, fillOpacity: 0.35, weight: 1,
-      tip: `${a.code} · ${fmtInt(a.homepass)} HP · take-up ${fmtPct(a.takeup)} · ${ACTION[a.action]?.label ?? a.action}`,
+      tip: [a.code, `${fmtInt(a.homepass)} homes`, `${fmtPct(a.takeup)} take-up`, `Recommended: ${ACTION[a.action]?.label ?? a.action}`],
     })),
   }], [areas, by])
   return (
@@ -21,9 +21,9 @@ export function AreaMap({ areas, partners, height = 460 }: { areas: AreaGeo[]; p
       <div className="row between" style={{ padding: '10px 16px 8px' }}>
         <div className="seg" role="group" aria-label="Colour areas by">
           <button className={by === 'partner' ? 'on' : ''} onClick={() => setBy('partner')}>By partner</button>
-          <button className={by === 'action' ? 'on' : ''} onClick={() => setBy('action')}>By portfolio action</button>
+          <button className={by === 'action' ? 'on' : ''} onClick={() => setBy('action')}>By recommended action</button>
         </div>
-        <span className="small muted">{areas.length} RFS areas</span>
+        <span className="small muted">{areas.length} live areas</span>
       </div>
       <Map layers={layers} height={height} />
       <div className="legend">

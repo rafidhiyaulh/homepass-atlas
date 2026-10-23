@@ -15,7 +15,7 @@ type Answer = {
 const EXAMPLES = [
   'Which Bekasi areas are below 60% of plan and older than a year?',
   'Top 15 uncovered cells in Jakarta Selatan that pay back within 20 months',
-  'Area revenue-share partner dengan churn di atas 2,5%',
+  'Area partner revenue-share dengan churn di atas 2,5%',
   'Where should we offer HiFi Air with at least 2,000 home-passes?',
   'Areas launched in 2024 that already paid back',
 ]
@@ -50,7 +50,7 @@ export function AskView() {
     if (c.key === 'reco') return <Badge tone={RECO[String(v)]?.tone ?? 'neutral'}>{RECO[String(v)]?.label ?? v}</Badge>
     if (c.key === 'payback') return months(Number(v))
     if (c.kind === 'pct') return fmtPct(Number(v))
-    if (c.key === 'age') return `${v} mo`
+    if (c.key === 'age') return `${v} months`
     if (c.kind === 'num') return c.key === 'score' ? Number(v).toFixed(0) : fmtInt(Number(v))
     return String(v)
   }
@@ -72,16 +72,16 @@ export function AskView() {
         <>
           <section className="card card-pad" style={{ marginBottom: 14 }}>
             <div className="row between">
-              <div><span className="small muted">Understood as · </span><span className="strong">{a.understood}</span></div>
-              <span className="small muted">{a.model}</span>
+              <div><div className="facts-l">Understood as</div><div className="strong">{a.understood}</div></div>
+              <span className="small muted">by {a.model}</span>
             </div>
             <div className="row" style={{ marginTop: 8 }}>
-              <Badge tone="brand">{a.entity}</Badge>
+              <Badge tone="brand">{a.entity === 'areas' ? 'Live areas' : 'Neighbourhoods'}</Badge>
               {a.filters.map((f, i) => <span key={i} className="badge b-neutral mono">{f.field} {OP[f.op] ?? f.op} {f.value}</span>)}
-              <span className="badge b-low mono">sort {a.sort.field} {a.sort.dir}</span>
-              {a.dropped.length > 0 && <span className="badge b-warn">dropped: {a.dropped.join(', ')}</span>}
+              <span className="badge b-low mono">sorted by {a.sort.field}, {a.sort.dir === 'asc' ? 'lowest first' : 'highest first'}</span>
+              {a.dropped.length > 0 && <span className="badge b-warn">ignored: {a.dropped.join(', ')}</span>}
             </div>
-            {a.unsupported && <div className="note" style={{ marginTop: 10 }}>Not expressible here: {a.unsupported}</div>}
+            {a.unsupported && <div className="note" style={{ marginTop: 10 }}>Could not answer this part: {a.unsupported}</div>}
           </section>
           <div className="cols-even">
             <section className="card">
@@ -91,7 +91,7 @@ export function AskView() {
                   <thead><tr>{a.columns.map(c => <th key={c.key} className={c.kind === 'num' || c.kind === 'pct' ? 'num' : undefined}>{c.label}</th>)}</tr></thead>
                   <tbody>
                     {a.rows.map((r, i) => <tr key={i}>{a.columns.map(c => <td key={c.key} className={c.kind === 'num' || c.kind === 'pct' ? 'num' : c.key === 'code' || c.key === 'h3' ? 'mono small' : undefined} style={{ whiteSpace: 'nowrap' }}>{cell(c, r[c.key] as never)}</td>)}</tr>)}
-                    {a.rows.length === 0 && <tr><td colSpan={a.columns.length} className="muted">No rows match. Try loosening a filter.</td></tr>}
+                    {a.rows.length === 0 && <tr><td colSpan={a.columns.length} className="muted">Nothing matches. Try a wider question.</td></tr>}
                   </tbody>
                 </table>
               </div>

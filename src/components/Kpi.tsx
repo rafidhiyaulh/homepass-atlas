@@ -1,7 +1,11 @@
-export function Kpi({ label, value, sub, accent }: { label: string; value: React.ReactNode; sub?: React.ReactNode; accent?: string }) {
+import { InfoTip, type TermKey } from './Help'
+
+export function Kpi({ label, value, sub, accent, help, term }: { label: string; value: React.ReactNode; sub?: React.ReactNode; accent?: string; help?: string; term?: TermKey }) {
   return (
     <div className="kpi" style={accent ? { borderTopColor: accent } : undefined}>
-      <div className="label">{label}</div>
+      <div className="label" style={{ overflow: 'visible', display: 'flex', alignItems: 'center' }}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>{(help || term) && <InfoTip text={help} k={term} />}
+      </div>
       <div className="value">{value}</div>
       {sub && <div className="sub">{sub}</div>}
     </div>

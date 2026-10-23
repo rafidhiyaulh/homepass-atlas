@@ -18,8 +18,8 @@ type Detail = {
 }
 
 const REASON: Record<string, string> = {
-  takeup_far_below_plan: 'Take-up < 50% of plan', takeup_below_plan: 'Take-up < 85% of plan', no_payback_at_current_margin: 'No payback at current margin',
-  payback_over_5y: 'Payback > 5 years', payback_over_4y: 'Payback > 4 years', high_churn: 'Churn > 2.5%/mo', negative_margin: 'Negative margin',
+  takeup_far_below_plan: 'Sales under half of plan', takeup_below_plan: 'Sales under 85% of plan', no_payback_at_current_margin: 'Never earns back at today\'s profit',
+  payback_over_5y: 'Earns back after 5+ years', payback_over_4y: 'Earns back after 4+ years', high_churn: 'Many cancellations', negative_margin: 'Losing money',
 }
 const ORDER = ['exit', 'optimize', 'maintain', 'ramping']
 
@@ -33,7 +33,7 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
   const counts = useMemo(() => Object.fromEntries(ORDER.map(a => [a, areas.filter(x => x.action === a)])), [areas])
   const rows = counts[tab] ?? []
   const layers: Layer[] = useMemo(() => [{
-    id: 'a', shapes: areas.map(a => ({ id: a.id, geom: a.geom, cls: `p-${a.action}`, fillOpacity: a.action === tab ? 0.55 : 0.12, weight: a.action === tab ? 1.4 : 0.6, tip: `${a.code} · ${ACTION[a.action].label} · ${fmtPct(a.vs_plan, 0)} of plan` })),
+    id: 'a', shapes: areas.map(a => ({ id: a.id, geom: a.geom, cls: `p-${a.action}`, fillOpacity: a.action === tab ? 0.55 : 0.12, weight: a.action === tab ? 1.4 : 0.6, tip: [a.code, ACTION[a.action].label, `${fmtPct(a.vs_plan, 0)} of plan`] })),
   }], [areas, tab])
 
   const select = (id: number | null) => { setSel(id); setDetail(null); setNote(null) }
@@ -61,28 +61,28 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
           <button key={k} onClick={() => { setTab(k); select(null) }} className="kpi" style={{ textAlign: 'left', cursor: 'pointer', borderTopColor: `var(--chart-${k === 'maintain' ? 'good' : k === 'optimize' ? 'warn' : k === 'exit' ? 'bad' : 'neutral'})`, outline: tab === k ? '2px solid var(--brand)' : undefined }}>
             <div className="label"><span aria-hidden>{ACTION[k].icon}</span> {ACTION[k].label}</div>
             <div className="value">{counts[k].length}</div>
-            <div className="sub">{fmtInt(counts[k].reduce((s, x) => s + x.homepass, 0))} HP · {rp(counts[k].reduce((s, x) => s + x.margin_m, 0))}/mo margin</div>
+            <div className="sub">{fmtInt(counts[k].reduce((s, x) => s + x.homepass, 0))} homes, {rp(counts[k].reduce((s, x) => s + x.margin_m, 0))} profit a month</div>
           </button>
         ))}
       </div>
 
       <div className="cols-2">
         <section className="card">
-          <div className="card-head"><div><h2 className="card-title">{ACTION[tab].label} · {rows.length} areas</h2><div className="card-sub">Sorted by gap to plan. Click an area for the diagnosis.</div></div></div>
+          <div className="card-head"><div><h2 className="card-title">{ACTION[tab].label}: {rows.length} areas</h2><div className="card-sub">Furthest behind plan first. Click an area for details.</div></div></div>
           <Map layers={layers} selected={sel} onSelect={(_, id) => select(Number(id))} height={340} fitKey="portfolio" />
           <div className="table-wrap" style={{ maxHeight: 420 }}>
             <table className="data">
-              <thead><tr><th>Area</th><th>Partner</th><th className="num">Age</th><th className="num">Take-up</th><th className="num">vs plan</th><th className="num">Payback</th><th>Why</th></tr></thead>
+              <thead><tr><th>Area</th><th>Partner</th><th className="num">Live for</th><th className="num">Take-up</th><th className="num">Of plan</th><th className="num">Earns back</th><th>Why</th></tr></thead>
               <tbody>
                 {rows.map(r => (
                   <tr key={r.id} className={`clickable${sel === r.id ? ' is-sel' : ''}`} onClick={() => select(r.id)}>
                     <td><span className="mono small">{r.code}</span><div className="small muted">{r.kota}</div></td>
                     <td><PartnerDot id={r.partner_id} code={r.partner_code} /></td>
-                    <td className="num">{r.age} mo</td>
+                    <td className="num">{r.age} months</td>
                     <td className="num">{fmtPct(r.takeup)}</td>
                     <td className="num strong">{fmtPct(r.vs_plan, 0)}</td>
                     <td className="num">{months(r.payback_proj)}</td>
-                    <td className="small">{r.reasons.map(x => REASON[x] ?? x).join(' · ') || '-'}</td>
+                    <td className="small">{r.reasons.length ? <ul className="list-plain">{r.reasons.map(x => <li key={x}>{REASON[x] ?? x}</li>)}</ul> : '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -91,7 +91,7 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
         </section>
 
         <section className="card card-pad" style={{ alignSelf: 'start', position: 'sticky', top: 70 }}>
-          {!a && <div className="muted">Select an area on the map or in the table.</div>}
+          {!a && <div className="muted">Click an area on the map or in the table.</div>}
           {a && (
             <div className="stack">
               <div className="row between">
@@ -99,22 +99,22 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
                 <Badge tone={ACTION[a.action].tone}><span aria-hidden>{ACTION[a.action].icon}</span> {ACTION[a.action].label}</Badge>
               </div>
               <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-                <Mini k="Home-passes" v={fmtInt(a.homepass)} />
-                <Mini k="Subscribers" v={fmtInt(a.subs)} />
-                <Mini k="Age" v={`${a.age} mo`} />
+                <Mini k="Homes" v={fmtInt(a.homepass)} />
+                <Mini k="Customers" v={fmtInt(a.subs)} />
+                <Mini k="Live for" v={`${a.age} months`} />
                 <Mini k="Take-up" v={fmtPct(a.takeup)} />
-                <Mini k="Plan now" v={fmtPct(a.bp_takeup)} />
-                <Mini k="Margin/mo" v={rp(a.margin_m)} />
+                <Mini k="Plan expected" v={fmtPct(a.bp_takeup)} />
+                <Mini k="Profit/month" v={rp(a.margin_m)} />
               </div>
               {detail ? (
                 <>
-                  <LineChart height={170} xLabel="Months since RFS" xFormat={v => `M${v}`} yFormat={v => fmtPct(v, 0)}
+                  <LineChart height={170} xLabel="Months since launch" xFormat={v => `M${v}`} yFormat={v => fmtPct(v, 0)}
                     series={[
                       { key: 'a', label: 'Take-up', color: 'var(--brand)', emphasis: true, points: detail.series.map(s => ({ x: s.age, y: s.subs / a.homepass })) },
                       { key: 'p', label: 'Plan', color: 'var(--ink)', dashed: true, points: detail.series.map(s => ({ x: s.age, y: 0.15 * (1 - Math.exp(-(Math.min(s.age, 48) + 0.5) / 7)) / (1 - Math.exp(-12 / 7)) })) },
                     ]} />
                   <div className="strong">{detail.diagnosis.verdict}</div>
-                  <div className="small strong muted" style={{ textTransform: 'uppercase', letterSpacing: '.12em' }}>Likely drivers → levers</div>
+                  <div className="small strong muted" style={{ textTransform: 'uppercase', letterSpacing: '.12em' }}>Likely cause and what to do</div>
                   {detail.diagnosis.drivers.map((d, i) => (
                     <div key={i} style={{ borderLeft: '3px solid var(--brand)', paddingLeft: 10 }}>
                       <div className="strong">{d.driver}</div>
@@ -123,10 +123,10 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
                     </div>
                   ))}
                   <div className="hr" />
-                  <button className="btn" onClick={writeNote} disabled={loadingNote}><Sparkles size={14} /> {loadingNote ? 'Writing…' : 'Draft a note for management (Gemini)'}</button>
+                  <button className="btn" onClick={writeNote} disabled={loadingNote}><Sparkles size={14} /> {loadingNote ? 'Writing…' : 'Write a summary for management (AI)'}</button>
                   {note && (note.text
-                    ? <div className="note"><div>{note.text}</div><div className="small muted" style={{ marginTop: 6 }}>{note.model} · every number checked against the area facts</div></div>
-                    : <div className="note">No AI note: {note.reason === 'llm_unavailable' ? 'model unavailable' : note.grounded === false ? 'the draft contained numbers not in the facts, so it was discarded' : note.reason}. The deterministic diagnosis above stands on its own.</div>)}
+                    ? <div className="note"><div>{note.text}</div><div className="small muted" style={{ marginTop: 6 }}>Written by {note.model}. Every number was checked against the data.</div></div>
+                    : <div className="note">No AI summary: {note.reason === 'llm_unavailable' ? 'the AI is unavailable right now' : note.grounded === false ? 'it used numbers not in the data, so it was thrown away' : note.reason}. The analysis above still holds.</div>)}
                 </>
               ) : <div className="skeleton" style={{ height: 200 }} />}
             </div>

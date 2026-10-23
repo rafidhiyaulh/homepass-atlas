@@ -13,5 +13,5 @@ export function CohortChart({ cohorts, plan }: { cohorts: { cohort: number; age:
     })),
     { key: 'plan', label: 'Plan', color: 'var(--ink)', dashed: true, points: plan.filter(p => p.age <= Math.max(...cohorts.map(c => c.age))).map(p => ({ x: p.age, y: p.takeup })) },
   ]
-  return <LineChart series={series} height={300} xLabel="Months since RFS" xFormat={v => `M${v}`} yFormat={v => fmtPct(v, 0)} />
+  return <LineChart series={series} height={300} xLabel="Months since launch" xFormat={v => `M${v}`} yFormat={v => fmtPct(v, 0)} />
 }

@@ -11,12 +11,9 @@ export default function LoginPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-ioh-business.png" alt="Indosat Ooredoo Hutchison" style={{ height: 28, width: 'auto' }} />
           <h1 className="page-title" style={{ marginTop: 16 }}>HomePass Atlas</h1>
-          <p className="page-sub">HBB market planning &amp; insight: clean home-pass boundaries, RFS desktop study, profitability and portfolio actions.</p>
+          <p className="page-sub">Home broadband planning in one place.</p>
           <LoginForm />
-          <p className="disclaimer" style={{ marginTop: 18 }}>
-            Concept prototype by Muhammad Rafi Dhiyaulhaq for an interview discussion. Not an official Indosat product.
-            Building data is real (Overture Maps); partners, areas and subscribers are synthetic.
-          </p>
+          <p className="disclaimer" style={{ marginTop: 18 }}>Prototype by Rafi Dhiyaulhaq. Sample data, not an official Indosat product.</p>
         </div>
       </div>
     </div>

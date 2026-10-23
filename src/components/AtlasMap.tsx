@@ -12,7 +12,7 @@ export type Shape = {
   fillOpacity?: number
   weight?: number
   dash?: string
-  tip?: string
+  tip?: string | string[]     // one line per array item
 }
 export type Layer = { id: string; shapes: Shape[]; interactive?: boolean }
 
@@ -63,7 +63,7 @@ export default function AtlasMap({
     <MapContainer center={[-6.23, 106.83]} zoom={11} style={{ height }} className="map" scrollWheelZoom preferCanvas={false}>
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · buildings: Overture Maps'
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, buildings by Overture Maps'
         maxZoom={19}
       />
       <Fit bounds={bounds} fitKey={fitKey} />
@@ -80,7 +80,11 @@ export default function AtlasMap({
               interactive={l.interactive !== false}
               eventHandlers={onSelect && l.interactive !== false ? { click: () => onSelect(l.id, s.id) } : undefined}
             >
-              {s.tip && i === 0 && <Tooltip sticky>{s.tip}</Tooltip>}
+              {s.tip && i === 0 && (
+                <Tooltip sticky>
+                  {Array.isArray(s.tip) ? <div className="lines">{s.tip.map((t, k) => <div key={k} style={k === 0 ? { fontWeight: 700 } : undefined}>{t}</div>)}</div> : s.tip}
+                </Tooltip>
+              )}
             </Polygon>
           ))
         }),

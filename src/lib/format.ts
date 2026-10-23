@@ -20,4 +20,4 @@ export const m2 = (n: number | null | undefined) => {
   return v >= 1e6 ? `${(v / 1e6).toFixed(2)} km²` : v >= 1e4 ? `${(v / 1e4).toFixed(1)} ha` : `${Math.round(v).toLocaleString('en-US')} m²`
 }
 
-export const months = (n: number | null | undefined) => (n == null ? 'never' : `${Math.round(Number(n))} mo`)
+export const months = (n: number | null | undefined) => (n == null ? 'not yet' : `${Math.round(Number(n))} months`)

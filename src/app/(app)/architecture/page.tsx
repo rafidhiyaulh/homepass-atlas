@@ -2,57 +2,64 @@ import { requireMe } from '@/lib/auth'
 import { asUser } from '@/lib/db'
 import { Diagram } from './Diagram'
 import { SqlTabs } from './SqlTabs'
+import { Explainer } from '@/components/Explain'
 
 export const metadata = { title: 'How it is built' }
 
 const PILLARS = [
   {
-    n: '1', title: 'Relational database', items: [
-      'Postgres 17 + PostGIS on Supabase, everything in its own schema `atlas` (shares a project with another app without touching it)',
-      'Normalised registry: partners → areas → area_monthly; uploads: batches → boundaries → conflicts; H3 market grid with GiST spatial indexes',
-      'Analytics as SQL views (v_area_perf, v_portfolio, v_cohort_curve) with security_invoker, so they inherit row-level security',
-      'Versioned migrations in db/migrations, applied by scripts/migrate.mjs',
+    n: '1', title: 'Relational database', plain: 'One organised home for all data. Rules decide who sees what.', items: [
+      'Postgres 17 with PostGIS for map math.',
+      'Own schema "atlas", isolated from other apps.',
+      'Tables: partners, areas, monthly results, uploads, shapes, clashes.',
+      'Spatial indexes make overlap checks fast.',
+      'Reports are SQL views that respect access rules.',
     ],
   },
   {
-    n: '2', title: 'APIs + backend', items: [
-      'Next.js 16 route handlers: /api/uploads/sign, /api/batches (+/:id, /geo, /export, /promote), /api/worker, /api/portfolio/:id(+/narrative), /api/rfs/export, /api/ask',
-      'Server components query Postgres directly; client components fetch JSON for live state (polling batch progress)',
-      'Business logic close to the data: pair classification, finalisation and promotion are PL/pgSQL functions',
-      'Consistent error contract { error, code } with HTTP status mapped from Postgres error classes',
+    n: '2', title: 'APIs + backend', plain: 'Doors the screens use to get data.', items: [
+      '11 endpoints: upload, check, export, predict, ask.',
+      'Heavy map logic runs inside the database.',
+      'Every error returns a clear code.',
     ],
   },
   {
-    n: '3', title: 'Distributed systems', items: [
-      'A KMZ is split into shards (polygon ranges) and queued on pgmq; N independent serverless invocations consume the queue as competing workers',
-      'At-least-once delivery: a read message is invisible for 60 s and reappears if a worker dies; shards are idempotent (delete-then-insert), so a retry is harmless',
-      'Exactly-once finalisation without a lock service: the worker whose conditional UPDATE flips the batch to "finalizing" does the merge',
-      'Poison messages go to a dead-letter queue after 3 attempts; pg_cron re-kicks workers every minute while the queue is non-empty',
-      'Rate limits are counted in Postgres, so they hold across every instance, not per process',
+    n: '3', title: 'Distributed systems', plain: 'Big files split into parts, checked in parallel. Nothing is lost if one fails.', items: [
+      'Each upload becomes jobs in a queue (pgmq).',
+      'Several workers pull jobs at the same time.',
+      'A crashed job reappears after 60 seconds.',
+      'Re-running a job never double counts.',
+      'Exactly one worker merges the final result.',
+      'Failed jobs move aside after 3 tries.',
+      'A timer restarts workers if the queue stalls.',
     ],
   },
   {
-    n: '4', title: 'AI / ML', items: [
-      'LightGBM take-up model on real building features (Overture Maps footprints → H3), validated with GroupKFold by RFS area to stop leakage',
-      'Per-cell SHAP contributions (TreeSHAP) shown as the "why" behind every RFS recommendation; model card with error vs a mean-only baseline',
-      'Gemini (OpenAI-compatible endpoint, same pattern as Perisai) for two jobs: question → whitelisted structured filter, and diagnosis → short management note',
-      'Guardrails: JSON schema output, server-side re-validation, no SQL from the model, and a numeric grounding check that rejects any number not in the facts',
+    n: '4', title: 'AI / ML', plain: 'A model predicts sales. AI answers questions and writes summaries.', items: [
+      'LightGBM predicts take-up from real building data.',
+      'Tested only on areas it never saw.',
+      'SHAP explains every single prediction.',
+      'Gemini turns questions into approved filters, never SQL.',
+      'Any AI number not in the data is rejected.',
     ],
   },
   {
-    n: '5', title: 'Cloud + deployment', items: [
-      'Vercel (Next.js, serverless functions, after() fan-out) and Supabase (Postgres, Auth, Storage, pgmq, pg_cron, pg_net)',
-      'Functions pinned to iad1, next to the database in us-east-1: each request makes several round trips, so co-location is the biggest latency lever',
-      'Offline data pipeline (scripts/pipeline): DuckDB over Overture S3 → H3 aggregates → synthetic registry → LightGBM → seed',
-      'Git from the first commit; secrets only in environment variables',
+    n: '5', title: 'Cloud + deployment', plain: 'Runs online, no servers to manage. Updates ship from Git.', items: [
+      'Website and APIs on Vercel.',
+      'Database, login, files and queue on Supabase.',
+      'Servers sit next to the database for speed.',
+      'Data pipeline: DuckDB, H3 grid, model, then load.',
     ],
   },
   {
-    n: '6', title: 'Security / networking', items: [
-      'Supabase Auth (JWT verified server-side) + Postgres RLS: a partner account only ever sees its own areas and uploads',
-      'Least privilege: the app logs in as atlas_app, which owns nothing and can only SET ROLE to atlas_user (RLS) or atlas_worker (a fixed set of functions)',
-      'Untrusted KMZ: size caps, zip-bomb guard counted while inflating, entry limits, DTD/entity rejection (XXE, billion laughs), vertex and polygon caps',
-      'Direct-to-Storage signed uploads to a private bucket; worker endpoint behind a bearer secret with constant-time compare; audit log; CSP, HSTS, frame-deny',
+    n: '6', title: 'Security / networking', plain: 'Everyone sees only their data. Uploads are checked first.', items: [
+      'Login by Supabase Auth, verified on every request.',
+      'Partners see only their own areas (RLS).',
+      'The app account owns nothing in the database.',
+      'Uploads blocked if zip bombs or hidden XML tricks.',
+      'Files stored privately, upload links expire.',
+      'Worker secret kept in a vault.',
+      'Browser security headers on every page.',
     ],
   },
 ]
@@ -67,9 +74,14 @@ export default async function Page() {
         <div>
           <div className="eyebrow">Architecture</div>
           <h1 className="page-title">How it is built</h1>
-          <p className="page-sub">A working prototype of the tools an HBB Market Planning &amp; Insight analyst needs, mapped to the job: market intelligence, network planning support, profitability, data management, performance monitoring and portfolio optimisation.</p>
+          <p className="page-sub">What runs behind the pages, and why each piece is there.</p>
         </div>
       </div>
+      <Explainer
+        question="How does the site work behind the screens?"
+        read="The diagram follows one request. Six cards, six building blocks."
+        why="Shows it is secure, scalable and easy to check."
+      />
 
       <section className="card card-pad" style={{ marginBottom: 14 }}>
         <h2 className="card-title">System</h2>
@@ -83,6 +95,7 @@ export default async function Page() {
               <span style={{ width: 26, height: 26, borderRadius: 7, background: 'var(--brand-fill)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 800 }}>{p.n}</span>
               <h2 className="card-title" style={{ margin: 0 }}>{p.title}</h2>
             </div>
+            <p className="strong" style={{ marginTop: 10 }}>{p.plain}</p>
             <ul style={{ margin: '10px 0 0 18px', display: 'grid', gap: 6 }}>
               {p.items.map((i, k) => <li key={k} style={{ color: 'var(--ink2)' }}>{i}</li>)}
             </ul>
@@ -91,28 +104,30 @@ export default async function Page() {
       </div>
 
       <section className="card card-pad" style={{ marginBottom: 14 }}>
-        <h2 className="card-title">The core check, portable</h2>
-        <p className="card-sub" style={{ marginBottom: 10 }}>Which boundaries are clean (no overlap, no intersection)? The same logic in the three engines an analyst is likely to have open.</p>
+        <h2 className="card-title">The overlap check in SQL</h2>
+        <p className="card-sub" style={{ marginBottom: 10 }}>Same check, three tools. Use whichever you have open.</p>
         <SqlTabs />
       </section>
 
       <div className="cols-even">
         <section className="card card-pad">
-          <h2 className="card-title">Data: what is real, what is not</h2>
+          <h2 className="card-title">What data is real</h2>
           <ul style={{ margin: '10px 0 0 18px', display: 'grid', gap: 6, color: 'var(--ink2)' }}>
-            <li><b>Real:</b> {s.buildings?.toLocaleString('en-US')} building footprints (Overture Maps 2026-09, which merges Google Open Buildings, Microsoft and OSM) aggregated into {s.cells.toLocaleString('en-US')} H3 cells; kota boundaries from BPS via geoBoundaries.</li>
-            <li><b>Heuristic:</b> home-passes per cell = small footprints (25–500 m²) + half of mid-size footprint ÷ 120 m² × 3 floors.</li>
-            <li><b>Synthetic:</b> 4 fictional partners, {s.areas} RFS areas, {s.monthly.toLocaleString('en-US')} months of subscriber, revenue and cost data, competitor presence. The generating process is in scripts/pipeline/02_synth.py so the model can be checked against a known truth.</li>
-            <li>No Indosat data of any kind is used.</li>
+            <li><b>Real:</b> {s.buildings?.toLocaleString('en-US')} building outlines, Overture Maps.</li>
+            <li><b>Real:</b> city borders from BPS.</li>
+            <li><b>Estimated:</b> homes per hexagon, from building sizes.</li>
+            <li><b>Sample:</b> partners, {s.areas} areas, customers, revenue, competitors.</li>
+            <li>No Indosat data is used.</li>
           </ul>
         </section>
         <section className="card card-pad">
-          <h2 className="card-title">What I would do next with real data</h2>
+          <h2 className="card-title">Next steps with real data</h2>
           <ul style={{ margin: '10px 0 0 18px', display: 'grid', gap: 6, color: 'var(--ink2)' }}>
-            <li>Replace the home-pass heuristic with the partner home-pass address lists, and calibrate it per kota with BPS household counts.</li>
-            <li>Train take-up on real cohorts, with a time split as well as the area split, and add price/package and competitor launch dates as features.</li>
-            <li>Run the boundary check in BigQuery GIS on the full national registry; the queue design stays the same.</li>
-            <li>Close the loop: post-RFS actuals feed back into the RFS scores every month.</li>
+            <li>Use real partner home-pass address lists.</li>
+            <li>Check home counts against BPS household data.</li>
+            <li>Retrain on real sales, split by time.</li>
+            <li>Run the overlap check nationwide in BigQuery.</li>
+            <li>Feed monthly results back into the scores.</li>
           </ul>
         </section>
       </div>

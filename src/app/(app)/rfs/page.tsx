@@ -1,6 +1,8 @@
 import { requireMe } from '@/lib/auth'
 import { asUser } from '@/lib/db'
 import { RfsView } from './RfsView'
+import { Explainer } from '@/components/Explain'
+import { Term } from '@/components/Help'
 
 export const metadata = { title: 'RFS desktop study' }
 
@@ -20,14 +22,16 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Network planning support</div>
+          <div className="eyebrow">Choosing the next areas to build</div>
           <h1 className="page-title">RFS desktop study</h1>
-          <p className="page-sub">
-            Every uncovered H3 cell (~0.74 km²) scored for fiber: home-passes estimated from real building footprints, take-up predicted by a model
-            trained on how existing areas converted, and payback for a capex-share partner. Cells that do not pay back are routed to HiFi Air (FWA) or held.
-          </p>
+          <p className="page-sub">Where should the next fiber go?</p>
         </div>
       </div>
+      <Explainer
+        question={<>Where should our next fiber go? Where fits <Term k="fwa">HiFi Air</Term>?</>}
+        read={<>Each <Term k="hex">hexagon</Term> is a neighbourhood. Darker means more value.</>}
+        why="Building is expensive. Start where money returns fastest."
+      />
       <RfsView cells={d.cells as never} model={d.model as never} />
     </>
   )

@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Boxes, ChartLine, Compass, Gauge, LogOut, Map, Menu, MessageSquareText, Moon, Network, ShieldCheck, Sun } from 'lucide-react'
+import { BookOpen, Boxes, ChartLine, Compass, Gauge, LogOut, Map, Menu, MessageSquareText, Moon, Network, ShieldCheck, Sun } from 'lucide-react'
 
 const NAV = [
   { group: 'Overview', items: [{ href: '/', label: 'Market overview', icon: Gauge }] },
@@ -21,7 +21,7 @@ const NAV = [
     ],
   },
   { group: 'Insight', items: [{ href: '/ask', label: 'Ask Atlas', icon: MessageSquareText }] },
-  { group: 'About', items: [{ href: '/architecture', label: 'How it is built', icon: Network }] },
+  { group: 'About', items: [{ href: '/architecture', label: 'How it is built', icon: Network }, { href: '/glossary', label: 'Glossary', icon: BookOpen }] },
 ]
 
 export function Shell({ me, children }: { me: { display_name: string; role: string; email?: string }; children: React.ReactNode }) {
@@ -69,7 +69,7 @@ export function Shell({ me, children }: { me: { display_name: string; role: stri
           ))}
         </nav>
         <div className="rail-foot">
-          Concept prototype by Rafi Dhiyaulhaq.<br />Not an official Indosat product. Partner and subscriber data are synthetic.
+          Prototype by Rafi Dhiyaulhaq<br />Sample data
         </div>
       </aside>
       <div className="main">

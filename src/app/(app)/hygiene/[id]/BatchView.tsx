@@ -6,6 +6,8 @@ import { Map, type Layer } from '@/components/Map'
 import { Badge, PartnerDot, STATUS, StatusBadge } from '@/components/Badge'
 import { Kpi } from '@/components/Kpi'
 import { fmtInt, fmtPct, m2 } from '@/lib/format'
+import { Facts } from '@/components/Explain'
+import { Term } from '@/components/Help'
 import type { Geometry } from 'geojson'
 
 type Batch = {
@@ -21,7 +23,7 @@ type Geo = { boundaries: { id: number; name: string; status: string; geom: Geome
 
 const ORDER = ['clean', 'touch', 'sliver', 'overlap', 'duplicate', 'invalid']
 const FILL: Record<string, string> = { clean: 'var(--chart-good)', touch: 'var(--low)', sliver: 'var(--chart-warn)', overlap: 'var(--chart-serious)', duplicate: 'var(--chart-bad)', invalid: 'var(--chart-bad)' }
-const KIND_LABEL: Record<string, string> = { overlap: 'Partial overlap', contains: 'Contains the other', within: 'Inside the other', duplicate: 'Duplicate', sliver: 'Sliver', touch: 'Touch only' }
+const KIND_LABEL: Record<string, string> = { overlap: 'Overlap', contains: 'Covers the other', within: 'Inside the other', duplicate: 'Duplicate', sliver: 'Sliver', touch: 'Shares a border' }
 
 export function BatchView({ id, role }: { id: string; role: string }) {
   const [d, setD] = useState<{ batch: Batch; shards: Shard[]; boundaries: Boundary[]; conflicts: Conflict[] } | null>(null)
@@ -55,13 +57,13 @@ export function BatchView({ id, role }: { id: string; role: string }) {
   const layers: Layer[] = useMemo(() => {
     if (!geo) return []
     return [
-      { id: 'registry', interactive: false, shapes: geo.registry.map(r => ({ id: r.id, geom: r.geom, cls: 'p-registry', fillOpacity: 0.08, weight: 1, dash: '4 3', tip: `Registry ${r.code}` })) },
-      { id: 'b', shapes: geo.boundaries.filter(b => filter === 'all' || b.status === filter).map(b => ({ id: b.id, geom: b.geom, cls: `p-${b.status}`, fillOpacity: 0.22, weight: 1.6, tip: `${b.name} · ${STATUS[b.status]?.label ?? b.status}` })) },
+      { id: 'registry', interactive: false, shapes: geo.registry.map(r => ({ id: r.id, geom: r.geom, cls: 'p-registry', fillOpacity: 0.08, weight: 1, dash: '4 3', tip: ['Area we already sell in', r.code] })) },
+      { id: 'b', shapes: geo.boundaries.filter(b => filter === 'all' || b.status === filter).map(b => ({ id: b.id, geom: b.geom, cls: `p-${b.status}`, fillOpacity: 0.22, weight: 1.6, tip: [b.name, STATUS[b.status]?.label ?? b.status] })) },
       { id: 'ov', interactive: false, shapes: geo.overlaps.map(o => ({ id: o.id, geom: o.geom, cls: 'p-conflict', fillOpacity: 0.55, weight: 0.8 })) },
     ]
   }, [geo, filter])
 
-  if (err) return <div className="note">{err}. <Link href="/hygiene">Back to submissions</Link></div>
+  if (err) return <div className="note">{err}. <Link href="/hygiene">Back to all files</Link></div>
   if (!d) return <div className="skeleton" style={{ height: 300 }} />
   const { batch, shards, boundaries, conflicts } = d
   const doneShards = shards.filter(s => s.status === 'done').length
@@ -84,20 +86,21 @@ export function BatchView({ id, role }: { id: string; role: string }) {
     <>
       <div className="page-head">
         <div>
-          <Link href="/hygiene" className="small row" style={{ gap: 4, display: 'inline-flex' }}><ArrowLeft size={13} /> All submissions</Link>
+          <Link href="/hygiene" className="small row" style={{ gap: 4, display: 'inline-flex' }}><ArrowLeft size={13} /> All files</Link>
           <h1 className="page-title" style={{ marginTop: 4 }}>{batch.filename}</h1>
-          <p className="page-sub row" style={{ gap: 8 }}>
-            {batch.partner_id && <PartnerDot id={batch.partner_id} code={batch.partner_code ?? ''} />} {batch.partner_name}
-            <span>·</span> {fmtInt(batch.polygons)} polygons <span>·</span> sliver threshold {fmtInt(Number(batch.sliver_m2))} m²
-            {secs != null && <><span>·</span> checked in {secs.toFixed(1)} s by {workers.length} worker{workers.length === 1 ? '' : 's'}</>}
-          </p>
+          <Facts items={[
+            { label: 'Partner', value: batch.partner_id ? <PartnerDot id={batch.partner_id} name={batch.partner_name ?? ''} /> : '-' },
+            { label: 'Shapes', value: fmtInt(batch.polygons) },
+            { label: 'Ignored overlaps', value: `under ${fmtInt(Number(batch.sliver_m2))} m²` },
+            ...(secs != null ? [{ label: 'Checked in', value: `${secs.toFixed(1)} seconds` }] : []),
+          ]} />
         </div>
         {done && (
           <div className="toolbar">
-            <a className="btn" href={`/api/batches/${id}/export?what=clean`}><Download size={14} /> Clean polygons</a>
-            <a className="btn" href={`/api/batches/${id}/export?what=clean_parts`}><Download size={14} /> Clean parts only</a>
-            <a className="btn" href={`/api/batches/${id}/export?what=issues`}><Download size={14} /> Issues</a>
-            {role === 'planner' && <button className="btn btn-primary" onClick={promote} disabled={promoted != null}><FileCheck2 size={14} /> {promoted == null ? 'Promote clean to registry' : promoted < 0 ? 'Failed' : `${promoted} added`}</button>}
+            <a className="btn" href={`/api/batches/${id}/export?what=clean`}><Download size={14} /> Clean shapes</a>
+            <a className="btn" href={`/api/batches/${id}/export?what=clean_parts`}><Download size={14} /> Clean parts</a>
+            <a className="btn" href={`/api/batches/${id}/export?what=issues`}><Download size={14} /> Shapes to fix</a>
+            {role === 'planner' && <button className="btn btn-primary" onClick={promote} disabled={promoted != null}><FileCheck2 size={14} /> {promoted == null ? 'Add clean shapes to registry' : promoted < 0 ? 'Failed' : `${promoted} added`}</button>}
           </div>
         )}
       </div>
@@ -105,7 +108,7 @@ export function BatchView({ id, role }: { id: string; role: string }) {
       {!done && (
         <section className="card card-pad" style={{ marginBottom: 14 }}>
           <div className="row between">
-            <div className="strong">{batch.status === 'failed' ? 'Check failed' : batch.status === 'finalizing' ? 'Merging shard results…' : `Workers processing shards · ${doneShards}/${batch.shards_total}`}</div>
+            <div className="strong">{batch.status === 'failed' ? 'Check failed' : batch.status === 'finalizing' ? 'Putting the results together…' : `Checking: ${doneShards} of ${batch.shards_total} parts done`}</div>
             <Badge tone={batch.status === 'failed' ? 'bad' : 'warn'}>{batch.status}</Badge>
           </div>
           <div className="progress" style={{ margin: '10px 0' }}><div style={{ width: `${batch.shards_total ? (doneShards / batch.shards_total) * 100 : 5}%` }} /></div>
@@ -117,23 +120,23 @@ export function BatchView({ id, role }: { id: string; role: string }) {
       {done && st && (
         <>
           <div className="kpis">
-            <Kpi label="Clean polygons" value={`${cleanN} / ${batch.polygons}`} sub={`${fmtPct(cleanN / batch.polygons, 0)} usable as-is (touch-only counts as clean)`} accent="var(--chart-good)" />
-            <Kpi label="Polygons with issues" value={fmtInt(batch.polygons - cleanN)} sub={`${bs.overlap ?? 0} overlap · ${bs.duplicate ?? 0} duplicate · ${bs.invalid ?? 0} self-intersect · ${bs.sliver ?? 0} sliver`} accent="var(--chart-serious)" />
-            <Kpi label="Overlapping area" value={m2(st.overlap_m2)} sub={`${fmtPct(st.overlap_m2 / st.area_m2)} of submitted area`} accent="var(--chart-bad)" />
-            <Kpi label="HP double counted" value={fmtInt(st.homepass_dup)} sub={`of ${fmtInt(st.homepass_est)} estimated in this file`} accent="var(--brand)" />
-            <Kpi label="Hits on live registry" value={fmtInt(st.registry_hits)} sub="polygons overlapping areas already RFS" accent="var(--ink)" />
+            <Kpi label="Clean shapes" term="clean" value={`${cleanN} of ${batch.polygons}`} sub={`${fmtPct(cleanN / batch.polygons, 0)} can be used as they are`} accent="var(--chart-good)" />
+            <Kpi label="Shapes to fix" value={fmtInt(batch.polygons - cleanN)} sub={`${bs.overlap ?? 0} overlap, ${bs.duplicate ?? 0} duplicate, ${bs.invalid ?? 0} broken, ${bs.sliver ?? 0} sliver`} accent="var(--chart-serious)" />
+            <Kpi label="Overlapping area" value={m2(st.overlap_m2)} sub={`${fmtPct(st.overlap_m2 / st.area_m2)} of the file`} accent="var(--chart-bad)" />
+            <Kpi label="Homes counted twice" term="homepass" value={fmtInt(st.homepass_dup)} sub={`out of ${fmtInt(st.homepass_est)} in this file`} accent="var(--brand)" />
+            <Kpi label="Clash with live areas" term="registry" value={fmtInt(st.registry_hits)} sub="shapes over areas we already sell in" accent="var(--ink)" />
           </div>
 
           <section className="card" style={{ marginBottom: 14 }}>
             <div className="card-head">
               <div>
                 <h2 className="card-title">Where the problems are</h2>
-                <div className="card-sub">Coloured by status. Red patches are shared area. Dashed grey outlines are areas already in the home-pass registry.</div>
+                <div className="card-sub">Red patches are ground claimed twice. Dashed outlines are areas we already sell in.</div>
               </div>
               <div className="seg" role="group" aria-label="Filter by status">
                 {['all', ...ORDER].map(s => (
                   <button key={s} className={filter === s ? 'on' : ''} onClick={() => setFilter(s)}>
-                    {s === 'all' ? `All ${batch.polygons}` : `${STATUS[s].label} ${bs[s] ?? 0}`}
+                    {s === 'all' ? `All (${batch.polygons})` : `${STATUS[s].label} (${bs[s] ?? 0})`}
                   </button>
                 ))}
               </div>
@@ -146,13 +149,16 @@ export function BatchView({ id, role }: { id: string; role: string }) {
                   <div className="row between"><span className="strong">{selB.name}</span><button className="btn btn-ghost btn-sm" onClick={() => setSel(null)} aria-label="Close">✕</button></div>
                   <div style={{ margin: '6px 0' }}><StatusBadge status={selB.status} /></div>
                   {!selB.is_valid && <div className="small" style={{ color: 'var(--crit)' }}>{selB.valid_reason}</div>}
-                  <div className="small muted">Area {m2(Number(selB.area_m2))} · clean part {m2(Number(selB.clean_area_m2))}</div>
-                  <div className="small muted">Home-passes est. {fmtInt(selB.homepass_est)}{selB.homepass_claimed ? ` · claimed ${fmtInt(Number(selB.homepass_claimed))}` : ''}</div>
+                  <ul className="list-plain small muted">
+                    <li>Size {m2(Number(selB.area_m2))}, of which clean {m2(Number(selB.clean_area_m2))}</li>
+                    <li>Homes we estimate: {fmtInt(selB.homepass_est)}</li>
+                    {selB.homepass_claimed && <li>Homes the partner claims: {fmtInt(Number(selB.homepass_claimed))}</li>}
+                  </ul>
                   {selConf.length > 0 && <div className="hr" />}
                   {selConf.slice(0, 6).map((c, i) => (
                     <div key={i} className="small" style={{ marginTop: 4 }}>
                       <span className="strong">{KIND_LABEL[c.a_id === sel ? c.kind : c.kind === 'contains' ? 'within' : c.kind === 'within' ? 'contains' : c.kind]}</span> with {c.a_id === sel ? c.b_name : c.a_name}
-                      {Number(c.overlap_m2) > 0 && <span className="muted"> · {m2(Number(c.overlap_m2))}</span>}
+                      {Number(c.overlap_m2) > 0 && <span className="muted"> ({m2(Number(c.overlap_m2))})</span>}
                     </div>
                   ))}
                 </div>
@@ -160,17 +166,17 @@ export function BatchView({ id, role }: { id: string; role: string }) {
             </div>
             <div className="legend">
               {ORDER.map(s => <span key={s} className="k"><span className="sw" style={{ background: FILL[s] }} /><span aria-hidden>{STATUS[s].icon}</span> {STATUS[s].label}</span>)}
-              <span className="k"><span className="sw" style={{ background: 'var(--crit)' }} /> Shared area</span>
-              <span className="k"><span className="sw" style={{ border: '1.5px dashed var(--ink2)' }} /> Registry (already RFS)</span>
+              <span className="k"><span className="sw" style={{ background: 'var(--crit)' }} /> Claimed twice</span>
+              <span className="k"><span className="sw" style={{ border: '1.5px dashed var(--ink2)' }} /> Already selling</span>
             </div>
           </section>
 
           <div className="cols-2">
             <section className="card">
-              <div className="card-head"><div><h2 className="card-title">Polygons</h2><div className="card-sub">Click a row to find it on the map.</div></div></div>
+              <div className="card-head"><div><h2 className="card-title">All shapes</h2><div className="card-sub">Click a row to find it on the map.</div></div></div>
               <div className="table-wrap" style={{ maxHeight: 520, marginTop: 10 }}>
                 <table className="data">
-                  <thead><tr><th>#</th><th>Name</th><th>Status</th><th className="num">Area</th><th className="num">Clean</th><th className="num">HP est.</th><th className="num">HP claimed</th></tr></thead>
+                  <thead><tr><th>#</th><th>Name</th><th>Result</th><th className="num">Size</th><th className="num">Clean part</th><th className="num">Homes (ours)</th><th className="num">Homes (claimed)</th></tr></thead>
                   <tbody>
                     {rows.map(b => (
                       <tr key={b.id} className={`clickable${sel === b.id ? ' is-sel' : ''}`} onClick={() => setSel(b.id)}>
@@ -188,10 +194,10 @@ export function BatchView({ id, role }: { id: string; role: string }) {
               </div>
             </section>
             <section className="card">
-              <div className="card-head"><div><h2 className="card-title">Conflicting pairs</h2><div className="card-sub">{conflicts.filter(c => c.kind !== 'touch').length} pairs share area; {conflicts.filter(c => c.kind === 'touch').length} only touch.</div></div></div>
+              <div className="card-head"><div><h2 className="card-title">Which shapes clash</h2><div className="card-sub">{conflicts.filter(c => c.kind !== 'touch').length} pairs share ground, {conflicts.filter(c => c.kind === 'touch').length} only share a border.</div></div></div>
               <div className="table-wrap" style={{ maxHeight: 520, marginTop: 10 }}>
                 <table className="data">
-                  <thead><tr><th>Polygon</th><th>Relation</th><th>With</th><th className="num">Shared</th><th className="num">HP dup.</th></tr></thead>
+                  <thead><tr><th>Shape</th><th>Problem</th><th>With</th><th className="num">Shared</th><th className="num">Homes twice</th></tr></thead>
                   <tbody>
                     {conflicts.map((c, i) => (
                       <tr key={i} className="clickable" onClick={() => setSel(c.a_id)}>
@@ -211,11 +217,11 @@ export function BatchView({ id, role }: { id: string; role: string }) {
           <section className="card card-pad" style={{ marginTop: 14 }}>
             <div className="row between">
               <h2 className="card-title">How the check ran</h2>
-              <span className="small muted">{batch.shards_total} shards · {workers.length} distinct workers · at-least-once delivery, idempotent shards</span>
+              <span className="small muted">File split into {batch.shards_total} <Term k="shard">parts</Term>, checked by {workers.length} <Term k="worker">worker{workers.length === 1 ? '' : 's'}</Term></span>
             </div>
             <div style={{ marginTop: 10 }}><ShardGrid shards={shards} /></div>
             <details style={{ marginTop: 12 }}>
-              <summary className="strong" style={{ cursor: 'pointer' }}>The SQL behind each pair</summary>
+              <summary className="strong" style={{ cursor: 'pointer' }}>Show the SQL</summary>
               <pre className="pre" style={{ marginTop: 8 }}>{SQL}</pre>
             </details>
           </section>
@@ -242,11 +248,11 @@ function ShardGrid({ shards }: { shards: Shard[] }) {
   return (
     <div className="shards">
       {shards.map(s => (
-        <div key={s.shard} className={`shard ${s.status}`} title={`shard ${s.shard}: polygons ${s.lo}-${s.hi} · ${s.status}${s.worker ? ` · ${s.worker}` : ''}${s.ms != null ? ` · ${s.ms} ms` : ''}${s.attempts > 1 ? ` · ${s.attempts} attempts` : ''}${s.last_error ? ` · ${s.last_error}` : ''}`}>
+        <div key={s.shard} className={`shard ${s.status}`} title={[`Part ${s.shard}: shapes ${s.lo} to ${s.hi}`, s.status, s.worker && `worker ${s.worker}`, s.ms != null && `${s.ms} ms`, s.attempts > 1 && `${s.attempts} attempts`, s.last_error].filter(Boolean).join('\n')}>
           {s.shard}
         </div>
       ))}
-      <span className="small muted" style={{ marginLeft: 6 }}>hover a shard for its worker and timing</span>
+      <span className="small muted" style={{ marginLeft: 6 }}>point at a part for details</span>
     </div>
   )
 }

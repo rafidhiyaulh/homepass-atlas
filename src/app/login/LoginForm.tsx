@@ -6,10 +6,10 @@ export function LoginForm() {
   const [state, action, pending] = useActionState(signIn, null)
   return (
     <div style={{ marginTop: 18 }}>
-      <div className="eyebrow" style={{ marginBottom: 8 }}>One-click demo</div>
+      <div className="eyebrow" style={{ marginBottom: 8 }}>Try it</div>
       <form action={action} className="stack">
         <button className="btn btn-primary" name="demo" value="planner" disabled={pending} style={{ width: '100%', justifyContent: 'center' }}>
-          Continue as Market Planner
+          Enter as Planner
         </button>
         <div className="row" style={{ gap: 8 }}>
           <button className="btn" name="demo" value="partner" disabled={pending} style={{ flex: 1, justifyContent: 'center' }}>Partner (NSF)</button>
@@ -23,7 +23,7 @@ export function LoginForm() {
         <button className="btn" disabled={pending} style={{ width: '100%', justifyContent: 'center' }}>Sign in</button>
       </form>
       {state?.error && <p role="alert" style={{ color: 'var(--crit)', marginTop: 10, fontWeight: 600 }}>{state.error}</p>}
-      <p className="small muted" style={{ marginTop: 10 }}>The three roles see different data: the partner account only sees its own areas and uploads (row-level security in Postgres).</p>
+      <p className="small muted" style={{ marginTop: 10 }}>A partner only sees its own areas.</p>
     </div>
   )
 }
