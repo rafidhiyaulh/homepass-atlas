@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Download, FileCheck2 } from 'lucide-react'
+import { ArrowLeft, Download } from 'lucide-react'
 import { Map, type Layer } from '@/components/Map'
 import { Badge, PartnerDot, STATUS, StatusBadge } from '@/components/Badge'
 import { Kpi } from '@/components/Kpi'
@@ -100,18 +100,18 @@ export function BatchView({ id, role }: { id: string; role: string }) {
             <a className="btn" href={`/api/batches/${id}/export?what=clean`}><Download size={14} /> Clean shapes</a>
             <a className="btn" href={`/api/batches/${id}/export?what=clean_parts`}><Download size={14} /> Clean parts</a>
             <a className="btn" href={`/api/batches/${id}/export?what=issues`}><Download size={14} /> Shapes to fix</a>
-            {role === 'planner' && <button className="btn btn-primary" onClick={promote} disabled={promoted != null}><FileCheck2 size={14} /> {promoted == null ? 'Add clean shapes to registry' : promoted < 0 ? 'Failed' : `${promoted} added`}</button>}
+            {role === 'planner' && <button className="btn btn-primary" onClick={promote} disabled={promoted != null}>{promoted == null ? 'Add clean shapes to registry' : promoted < 0 ? 'Failed' : `${promoted} added`}</button>}
           </div>
         )}
       </div>
 
       {!done && (
-        <section className="card card-pad" style={{ marginBottom: 14 }}>
+        <section className="card card-pad" style={{ marginBottom: 16 }}>
           <div className="row between">
             <div className="strong">{batch.status === 'failed' ? 'Check failed' : batch.status === 'finalizing' ? 'Putting the results together…' : `Checking: ${doneShards} of ${batch.shards_total} parts done`}</div>
             <Badge tone={batch.status === 'failed' ? 'bad' : 'warn'}>{batch.status}</Badge>
           </div>
-          <div className="progress" style={{ margin: '10px 0' }}><div style={{ width: `${batch.shards_total ? (doneShards / batch.shards_total) * 100 : 5}%` }} /></div>
+          <div className="progress" style={{ margin: '12px 0' }}><div style={{ width: `${batch.shards_total ? (doneShards / batch.shards_total) * 100 : 5}%` }} /></div>
           {batch.error && <p style={{ color: 'var(--crit)' }}>{batch.error}</p>}
           <ShardGrid shards={shards} />
         </section>
@@ -127,7 +127,7 @@ export function BatchView({ id, role }: { id: string; role: string }) {
             <Kpi label="Clash with live areas" term="registry" value={fmtInt(st.registry_hits)} sub="shapes over areas we already sell in" accent="var(--ink)" />
           </div>
 
-          <section className="card" style={{ marginBottom: 14 }}>
+          <section className="card" style={{ marginBottom: 16 }}>
             <div className="card-head">
               <div>
                 <h2 className="card-title">Where the problems are</h2>
@@ -147,7 +147,7 @@ export function BatchView({ id, role }: { id: string; role: string }) {
               {selB && (
                 <div className="card card-pad" style={{ position: 'absolute', top: 12, right: 12, width: 320, zIndex: 500 }}>
                   <div className="row between"><span className="strong">{selB.name}</span><button className="btn btn-ghost btn-sm" onClick={() => setSel(null)} aria-label="Close">✕</button></div>
-                  <div style={{ margin: '6px 0' }}><StatusBadge status={selB.status} /></div>
+                  <div style={{ margin: '8px 0' }}><StatusBadge status={selB.status} /></div>
                   {!selB.is_valid && <div className="small" style={{ color: 'var(--crit)' }}>{selB.valid_reason}</div>}
                   <ul className="list-plain small muted">
                     <li>Size {m2(Number(selB.area_m2))}, of which clean {m2(Number(selB.clean_area_m2))}</li>
@@ -174,7 +174,7 @@ export function BatchView({ id, role }: { id: string; role: string }) {
           <div className="cols-2">
             <section className="card">
               <div className="card-head"><div><h2 className="card-title">All shapes</h2><div className="card-sub">Click a row to find it on the map.</div></div></div>
-              <div className="table-wrap" style={{ maxHeight: 520, marginTop: 10 }}>
+              <div className="table-wrap" style={{ maxHeight: 520, marginTop: 12 }}>
                 <table className="data">
                   <thead><tr><th>#</th><th>Name</th><th>Result</th><th className="num">Size</th><th className="num">Clean part</th><th className="num">Homes (ours)</th><th className="num">Homes (claimed)</th></tr></thead>
                   <tbody>
@@ -195,7 +195,7 @@ export function BatchView({ id, role }: { id: string; role: string }) {
             </section>
             <section className="card">
               <div className="card-head"><div><h2 className="card-title">Which shapes clash</h2><div className="card-sub">{conflicts.filter(c => c.kind !== 'touch').length} pairs share ground, {conflicts.filter(c => c.kind === 'touch').length} only share a border.</div></div></div>
-              <div className="table-wrap" style={{ maxHeight: 520, marginTop: 10 }}>
+              <div className="table-wrap" style={{ maxHeight: 520, marginTop: 12 }}>
                 <table className="data">
                   <thead><tr><th>Shape</th><th>Problem</th><th>With</th><th className="num">Shared</th><th className="num">Homes twice</th></tr></thead>
                   <tbody>
@@ -214,12 +214,12 @@ export function BatchView({ id, role }: { id: string; role: string }) {
             </section>
           </div>
 
-          <section className="card card-pad" style={{ marginTop: 14 }}>
+          <section className="card card-pad" style={{ marginTop: 16 }}>
             <div className="row between">
               <h2 className="card-title">How the check ran</h2>
               <span className="small muted">File split into {batch.shards_total} <Term k="shard">parts</Term>, checked by {workers.length} <Term k="worker">worker{workers.length === 1 ? '' : 's'}</Term></span>
             </div>
-            <div style={{ marginTop: 10 }}><ShardGrid shards={shards} /></div>
+            <div style={{ marginTop: 12 }}><ShardGrid shards={shards} /></div>
             <details style={{ marginTop: 12 }}>
               <summary className="strong" style={{ cursor: 'pointer' }}>Show the SQL</summary>
               <pre className="pre" style={{ marginTop: 8 }}>{SQL}</pre>
@@ -234,7 +234,7 @@ export function BatchView({ id, role }: { id: string; role: string }) {
 function StatusBar({ counts, total }: { counts: Record<string, number>; total: number }) {
   const parts = ORDER.filter(s => counts[s])
   return (
-    <div style={{ padding: '12px 16px 6px' }}>
+    <div style={{ padding: '12px 16px 8px' }}>
       <div style={{ display: 'flex', gap: 2, height: 14 }} role="img" aria-label={parts.map(s => `${STATUS[s].label} ${counts[s]}`).join(', ')}>
         {parts.map((s, i) => (
           <div key={s} title={`${STATUS[s].label}: ${counts[s]}`} style={{ flex: counts[s] / total, background: FILL[s], borderRadius: i === 0 ? '4px 0 0 4px' : i === parts.length - 1 ? '0 4px 4px 0' : 0, minWidth: 4 }} />
@@ -252,7 +252,7 @@ function ShardGrid({ shards }: { shards: Shard[] }) {
           {s.shard}
         </div>
       ))}
-      <span className="small muted" style={{ marginLeft: 6 }}>point at a part for details</span>
+      <span className="small muted" style={{ marginLeft: 8 }}>point at a part for details</span>
     </div>
   )
 }

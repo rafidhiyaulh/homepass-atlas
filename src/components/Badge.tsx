@@ -35,7 +35,7 @@ export function StatusBadge({ status }: { status: string | null }) {
 
 export function PartnerDot({ id, code, name }: { id: number; code?: string; name?: string }) {
   return (
-    <span className="row" style={{ gap: 6, display: 'inline-flex' }}>
+    <span className="row" style={{ gap: 8, display: 'inline-flex' }}>
       <span style={{ width: 9, height: 9, borderRadius: 3, background: `var(--partner-${id})`, flex: 'none' }} />
       {code && <span className="mono" style={{ fontSize: 11.5 }}>{code}</span>}
       {name && <span>{name}</span>}

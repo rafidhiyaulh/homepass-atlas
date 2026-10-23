@@ -72,7 +72,6 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Architecture</div>
           <h1 className="page-title">How it is built</h1>
           <p className="page-sub">What runs behind the pages, and why each piece is there.</p>
         </div>
@@ -83,36 +82,36 @@ export default async function Page() {
         why="Shows it is secure, scalable and easy to check."
       />
 
-      <section className="card card-pad" style={{ marginBottom: 14 }}>
+      <section className="card card-pad" style={{ marginBottom: 16 }}>
         <h2 className="card-title">System</h2>
         <Diagram />
       </section>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', marginBottom: 14 }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', marginBottom: 16 }}>
         {PILLARS.map(p => (
           <section key={p.n} className="card card-pad">
-            <div className="row" style={{ gap: 10 }}>
-              <span style={{ width: 26, height: 26, borderRadius: 7, background: 'var(--brand-fill)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 800 }}>{p.n}</span>
+            <div className="row" style={{ gap: 12 }}>
+              <span className="mono muted">{String(p.n).padStart(2, '0')}</span>
               <h2 className="card-title" style={{ margin: 0 }}>{p.title}</h2>
             </div>
-            <p className="strong" style={{ marginTop: 10 }}>{p.plain}</p>
-            <ul style={{ margin: '10px 0 0 18px', display: 'grid', gap: 6 }}>
+            <p className="strong" style={{ marginTop: 12 }}>{p.plain}</p>
+            <ul style={{ margin: '12px 0 0 16px', display: 'grid', gap: 8 }}>
               {p.items.map((i, k) => <li key={k} style={{ color: 'var(--ink2)' }}>{i}</li>)}
             </ul>
           </section>
         ))}
       </div>
 
-      <section className="card card-pad" style={{ marginBottom: 14 }}>
+      <section className="card card-pad" style={{ marginBottom: 16 }}>
         <h2 className="card-title">The overlap check in SQL</h2>
-        <p className="card-sub" style={{ marginBottom: 10 }}>Same check, three tools. Use whichever you have open.</p>
+        <p className="card-sub" style={{ marginBottom: 12 }}>Same check, three tools. Use whichever you have open.</p>
         <SqlTabs />
       </section>
 
       <div className="cols-even">
         <section className="card card-pad">
           <h2 className="card-title">What data is real</h2>
-          <ul style={{ margin: '10px 0 0 18px', display: 'grid', gap: 6, color: 'var(--ink2)' }}>
+          <ul style={{ margin: '12px 0 0 16px', display: 'grid', gap: 8, color: 'var(--ink2)' }}>
             <li><b>Real:</b> {s.buildings?.toLocaleString('en-US')} building outlines, Overture Maps.</li>
             <li><b>Real:</b> city borders from BPS.</li>
             <li><b>Estimated:</b> homes per hexagon, from building sizes.</li>
@@ -122,7 +121,7 @@ export default async function Page() {
         </section>
         <section className="card card-pad">
           <h2 className="card-title">Next steps with real data</h2>
-          <ul style={{ margin: '10px 0 0 18px', display: 'grid', gap: 6, color: 'var(--ink2)' }}>
+          <ul style={{ margin: '12px 0 0 16px', display: 'grid', gap: 8, color: 'var(--ink2)' }}>
             <li>Use real partner home-pass address lists.</li>
             <li>Check home counts against BPS household data.</li>
             <li>Retrain on real sales, split by time.</li>

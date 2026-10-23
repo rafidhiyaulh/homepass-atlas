@@ -2,26 +2,26 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { BookOpen, Boxes, ChartLine, Compass, Gauge, LogOut, Map, Menu, MessageSquareText, Moon, Network, ShieldCheck, Sun } from 'lucide-react'
+import { LogOut, Menu, Moon, Sun } from 'lucide-react'
 
 const NAV = [
-  { group: 'Overview', items: [{ href: '/', label: 'Market overview', icon: Gauge }] },
+  { group: 'Overview', items: [{ href: '/', label: 'Market overview' }] },
   {
     group: 'Planning',
     items: [
-      { href: '/hygiene', label: 'Boundary hygiene', icon: ShieldCheck },
-      { href: '/rfs', label: 'RFS desktop study', icon: Compass },
+      { href: '/hygiene', label: 'Boundary hygiene' },
+      { href: '/rfs', label: 'RFS desktop study' },
     ],
   },
   {
     group: 'Performance',
     items: [
-      { href: '/profitability', label: 'Profitability & cohorts', icon: ChartLine },
-      { href: '/portfolio', label: 'Portfolio actions', icon: Boxes },
+      { href: '/profitability', label: 'Profitability & cohorts' },
+      { href: '/portfolio', label: 'Portfolio actions' },
     ],
   },
-  { group: 'Insight', items: [{ href: '/ask', label: 'Ask Atlas', icon: MessageSquareText }] },
-  { group: 'About', items: [{ href: '/architecture', label: 'How it is built', icon: Network }, { href: '/glossary', label: 'Glossary', icon: BookOpen }] },
+  { group: 'Insight', items: [{ href: '/ask', label: 'Ask Atlas' }] },
+  { group: 'About', items: [{ href: '/architecture', label: 'How it is built' }, { href: '/glossary', label: 'Glossary' }] },
 ]
 
 export function Shell({ me, children }: { me: { display_name: string; role: string; email?: string }; children: React.ReactNode }) {
@@ -52,7 +52,9 @@ export function Shell({ me, children }: { me: { display_name: string; role: stri
       <aside className={`rail${open ? ' open' : ''}`} aria-label="Navigation">
         <div className="rail-brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-ioh-business.png" alt="Indosat Ooredoo Hutchison" />
+          <img className="logo-light" src="/logo-ioh-business.png" alt="Indosat Ooredoo Hutchison" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="logo-dark" src="/logo-ioh-business-dark.png" alt="Indosat Ooredoo Hutchison" />
           <div className="product">HomePass Atlas</div>
           <div className="sub">HBB Market Planning &amp; Insight</div>
         </div>
@@ -62,7 +64,7 @@ export function Shell({ me, children }: { me: { display_name: string; role: stri
               <div className="group">{g.group}</div>
               {g.items.map(i => (
                 <Link key={i.href} href={i.href} onClick={() => setOpen(false)} className={`nav-item${active(i.href) ? ' is-active' : ''}`}>
-                  <i.icon size={15} strokeWidth={2} /> {i.label}
+                  {i.label}
                 </Link>
               ))}
             </div>
@@ -75,7 +77,6 @@ export function Shell({ me, children }: { me: { display_name: string; role: stri
       <div className="main">
         <header className="topbar">
           <button className="btn btn-ghost btn-sm menu-btn" onClick={() => setOpen(true)} aria-label="Open menu"><Menu size={16} /></button>
-          <Map size={15} className="muted" aria-hidden />
           <span className="crumb">{current?.label ?? 'HomePass Atlas'}</span>
           <span className="spacer" />
           <button className="btn btn-ghost btn-sm" onClick={toggleTheme} aria-label="Toggle theme">

@@ -53,7 +53,6 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Are we making money?</div>
           <h1 className="page-title">Profitability &amp; cohorts</h1>
           <p className="page-sub">Money and sales, by partner, by city and by launch year.</p>
         </div>
@@ -71,7 +70,7 @@ export default async function Page() {
         <Kpi label="Homes that buy" term="takeup" value={fmtPct(tot.subs / Math.max(1, tot.hp))} sub={`plan expected ${fmtPct(d.partners.reduce((a, p) => a + p.plan * p.homepass, 0) / Math.max(1, tot.hp))}`} accent="var(--brand)" />
       </div>
 
-      <div className="cols-even" style={{ marginBottom: 14 }}>
+      <div className="cols-even" style={{ marginBottom: 16 }}>
         <Card title="How fast homes sign up" sub="Share of homes buying, each month after launch.">
           <CohortChart cohorts={d.cohorts as never} plan={d.plan as never} />
         </Card>
@@ -92,7 +91,7 @@ export default async function Page() {
               </tbody>
             </table>
           </div>
-          <p className="small muted" style={{ marginTop: 10 }}>Revenue share: fast payback, less profit per customer. Shared build: needs strong sales to recover cost.</p>
+          <p className="small muted" style={{ marginTop: 12 }}>Revenue share: fast payback, less profit per customer. Shared build: needs strong sales to recover cost.</p>
         </Card>
       </div>
 
@@ -116,9 +115,9 @@ export default async function Page() {
               </tbody>
             </table>
           </div>
-          <div className="legend" style={{ padding: '10px 0 0' }}>
+          <div className="legend" style={{ padding: '12px 0 0' }}>
             <span className="k"><span className="sw" style={{ background: 'var(--pos-w)', border: '1px solid var(--pos)' }} /> on or above plan</span>
-            <span className="k"><span className="sw" style={{ background: 'var(--mod-w)', border: '1px solid var(--mod)' }} /> 85–99%</span>
+            <span className="k"><span className="sw" style={{ background: 'var(--mod-w)', border: '1px solid var(--mod)' }} /> 85 to 99%</span>
             <span className="k"><span className="sw" style={{ background: 'var(--crit-w)', border: '1px solid var(--crit)' }} /> below 85%</span>
           </div>
         </Card>

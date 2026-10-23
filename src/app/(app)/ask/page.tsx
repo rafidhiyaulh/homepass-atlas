@@ -10,7 +10,6 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Ask in your own words</div>
           <h1 className="page-title">Ask Atlas</h1>
           <p className="page-sub">Type a question in English or Bahasa Indonesia.</p>
         </div>

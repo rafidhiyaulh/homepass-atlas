@@ -65,11 +65,11 @@ export function SqlTabs() {
       <div className="seg" role="tablist">
         {Object.keys(SQL).map(t => <button key={t} role="tab" aria-selected={k === t} className={k === t ? 'on' : ''} onClick={() => setK(t)}>{t}</button>)}
       </div>
-      <p className="small strong" style={{ marginTop: 10 }}>{WHY[k]}</p>
+      <p className="small strong" style={{ marginTop: 12 }}>{WHY[k]}</p>
       <pre className="pre" style={{ marginTop: 8 }}>{SQL[k]}</pre>
       <div className="small muted" style={{ marginTop: 8 }}>
         <div className="strong" style={{ color: 'var(--ink2)' }}>Ask the business first:</div>
-        <ul style={{ margin: '4px 0 0 18px' }}>
+        <ul style={{ margin: '4px 0 0 16px' }}>
           <li>Does a shared border count as a clash?</li>
           <li>How small is a drawing mistake, in m²?</li>
           <li>Check within the file, or against live areas too?</li>

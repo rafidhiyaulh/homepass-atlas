@@ -18,12 +18,12 @@ export function GlossaryTable({ entries }: { entries: Entry[] }) {
         <div className="seg" role="group" aria-label="Group">
           {groups.map(x => <button key={x} className={g === x ? 'on' : ''} onClick={() => setG(x)}>{x}</button>)}
         </div>
-        <label className="row" style={{ gap: 6 }}>
+        <label className="row" style={{ gap: 8 }}>
           <Search size={14} className="muted" />
           <input className="input" value={q} onChange={e => setQ(e.target.value)} placeholder="Find a term" aria-label="Find a term" style={{ width: 220 }} />
         </label>
       </div>
-      <div className="table-wrap" style={{ marginTop: 10 }}>
+      <div className="table-wrap" style={{ marginTop: 12 }}>
         <table className="data">
           <thead><tr><th style={{ width: '18%' }}>Term</th><th style={{ width: '40%' }}>Meaning</th><th>Benchmark</th></tr></thead>
           <tbody>

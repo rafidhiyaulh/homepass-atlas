@@ -13,7 +13,6 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Keeping the home-pass list accurate</div>
           <h1 className="page-title">Boundary hygiene</h1>
           <p className="page-sub">Check a partner&apos;s coverage map before its homes are counted.</p>
         </div>

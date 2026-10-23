@@ -67,7 +67,7 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
         <Kpi label="Prediction accuracy" help="Average gap between predicted and actual take-up, tested on areas the model never saw." value={`±${(Number(m.mae) * 100).toFixed(1)} pts`} sub={`${fmtPct(Number(m.mae_lift_vs_mean), 0)} better than guessing the average`} accent="var(--chart-good)" />
       </div>
 
-      <section className="card" style={{ marginBottom: 14 }}>
+      <section className="card" style={{ marginBottom: 16 }}>
         <div className="card-head">
           <div><h2 className="card-title">Opportunity map</h2><div className="card-sub">Darker means more value over 5 years. Grey already has our fiber.</div></div>
           <div className="toolbar">
@@ -90,8 +90,8 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
           {s && (
             <div className="card card-pad" style={{ position: 'absolute', top: 12, right: 12, width: 340, zIndex: 500, maxHeight: 490, overflowY: 'auto' }}>
               <div className="row between"><span className="strong">{KOTA_SHORT(s.kota)}</span><button className="btn btn-ghost btn-sm" onClick={() => setSel(null)} aria-label="Close">✕</button></div>
-              <div className="row" style={{ margin: '6px 0' }}><Badge tone={RECO[s.reco].tone}>{RECO[s.reco].label}</Badge><span className="small muted">score {s.score.toFixed(0)} of 100</span></div>
-              <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 6, margin: '8px 0' }}>
+              <div className="row" style={{ margin: '8px 0' }}><Badge tone={RECO[s.reco].tone}>{RECO[s.reco].label}</Badge><span className="small muted">score {s.score.toFixed(0)} of 100</span></div>
+              <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 8, margin: '8px 0' }}>
                 <Stat k="Homes" v={fmtInt(s.homepass_est)} />
                 <Stat k="Buildings" v={fmtInt(s.buildings)} />
                 <Stat k="Buy in year 1" v={fmtPct(s.p12)} />
@@ -99,7 +99,7 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
                 <Stat k="Earns back in" v={months(s.payback)} />
                 <Stat k="Competitors" v={String(s.competitors)} />
               </div>
-              <div className="small strong" style={{ marginTop: 6 }}>What drives this prediction<InfoTip k="shap" /></div>
+              <div className="small strong" style={{ marginTop: 8 }}>What drives this prediction<InfoTip k="shap" /></div>
               <Drivers d={s.drivers} />
             </div>
           )}
@@ -114,7 +114,7 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
       <div className="cols-2">
         <section className="card">
           <div className="card-head"><div><h2 className="card-title">Best places first</h2><div className="card-sub">Top {Math.min(40, shown.length)} by value. Click a row to find it.</div></div></div>
-          <div className="table-wrap" style={{ maxHeight: 560, marginTop: 10 }}>
+          <div className="table-wrap" style={{ maxHeight: 560, marginTop: 12 }}>
             <table className="data">
               <thead><tr><th>#</th><th>City</th><th className="num">Homes</th><th className="num">Buy in year 1</th><th className="num">Customers yr 2</th><th className="num"><Term k="payback">Earns back</Term></th><th>Advice</th><th className="num">Score</th></tr></thead>
               <tbody>
@@ -152,9 +152,9 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
               </div>
             ))}
           </div>
-          <div className="note" style={{ marginTop: 14 }}>
+          <div className="note" style={{ marginTop: 16 }}>
             <div className="strong">Money assumptions</div>
-            <ul style={{ margin: '4px 0 0 18px' }}>
+            <ul style={{ margin: '4px 0 0 16px' }}>
               <li>Customer pays Rp 255K a month.</li>
               <li>Partner fee is Rp 100K per customer.</li>
               <li>Building costs Rp 400K per home.</li>
@@ -169,7 +169,7 @@ export function RfsView({ cells, model }: { cells: Cell[]; model: Model }) {
 
 function Stat({ k, v }: { k: string; v: string }) {
   return (
-    <div style={{ background: 'var(--panel-alt)', borderRadius: 6, padding: '6px 8px' }}>
+    <div style={{ background: 'var(--panel-alt)', borderRadius: 6, padding: '8px 8px' }}>
       <div className="small muted">{k}</div>
       <div className="strong">{v}</div>
     </div>

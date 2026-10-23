@@ -2,7 +2,7 @@
 // the offline data pipeline at the bottom. Arrows are routed so none crosses a box or another arrow.
 const box = (x: number, y: number, w: number, h: number, title: string, lines: string[], accent = false) => (
   <g key={title}>
-    <rect x={x} y={y} width={w} height={h} rx={9} fill="var(--panel)" stroke={accent ? 'var(--brand)' : 'var(--rule2)'} strokeWidth={accent ? 1.6 : 1} />
+    <rect x={x} y={y} width={w} height={h} rx={9} fill="var(--panel)" stroke={accent ? 'var(--ink2)' : 'var(--rule2)'} strokeWidth={accent ? 1.6 : 1} />
     <text x={x + 12} y={y + 22} fontSize={13} fontWeight={750} fill="var(--ink)">{title}</text>
     {lines.map((l, i) => <text key={i} x={x + 12} y={y + 42 + i * 16} fontSize={11.5} fill="var(--ink2)">{l}</text>)}
   </g>
@@ -14,7 +14,7 @@ const label = (x: number, y: number, t: string, anchor: 'start' | 'middle' | 'en
 
 export function Diagram() {
   return (
-    <div style={{ overflowX: 'auto', marginTop: 10 }}>
+    <div style={{ overflowX: 'auto', marginTop: 12 }}>
       <svg viewBox="0 0 1100 450" width="100%" style={{ minWidth: 900, display: 'block' }} role="img"
         aria-label="Browser calls the Next.js app on Vercel, which queries Postgres as the user and fans out workers that consume a pgmq queue; Gemini is called for questions and notes; an offline Python pipeline seeds the database from Overture building data.">
         <defs>

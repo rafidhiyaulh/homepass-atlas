@@ -18,7 +18,7 @@ export function AreaMap({ areas, partners, height = 460 }: { areas: AreaGeo[]; p
   }], [areas, by])
   return (
     <>
-      <div className="row between" style={{ padding: '10px 16px 8px' }}>
+      <div className="row between" style={{ padding: '12px 16px 8px' }}>
         <div className="seg" role="group" aria-label="Colour areas by">
           <button className={by === 'partner' ? 'on' : ''} onClick={() => setBy('partner')}>By partner</button>
           <button className={by === 'action' ? 'on' : ''} onClick={() => setBy('action')}>By recommended action</button>

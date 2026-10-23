@@ -16,7 +16,6 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Deciding what to do with each area</div>
           <h1 className="page-title">Portfolio actions</h1>
           <p className="page-sub">Keep, fix or exit, for every live area.</p>
         </div>

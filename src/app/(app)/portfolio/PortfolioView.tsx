@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
 import type { Geometry } from 'geojson'
 import { Map, type Layer } from '@/components/Map'
 import { ACTION, Badge, PartnerDot } from '@/components/Badge'
@@ -58,8 +57,8 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
     <>
       <div className="kpis">
         {ORDER.map(k => (
-          <button key={k} onClick={() => { setTab(k); select(null) }} className="kpi" style={{ textAlign: 'left', cursor: 'pointer', borderTopColor: `var(--chart-${k === 'maintain' ? 'good' : k === 'optimize' ? 'warn' : k === 'exit' ? 'bad' : 'neutral'})`, outline: tab === k ? '2px solid var(--brand)' : undefined }}>
-            <div className="label"><span aria-hidden>{ACTION[k].icon}</span> {ACTION[k].label}</div>
+          <button key={k} onClick={() => { setTab(k); select(null) }} className={`kpi${tab === k ? ' on' : ''}`} aria-pressed={tab === k}>
+            <div className="label" style={{ display: 'flex', alignItems: 'center' }}><span className="key" style={{ background: `var(--chart-${k === 'maintain' ? 'good' : k === 'optimize' ? 'warn' : k === 'exit' ? 'bad' : 'neutral'})` }} aria-hidden />{ACTION[k].label}</div>
             <div className="value">{counts[k].length}</div>
             <div className="sub">{fmtInt(counts[k].reduce((s, x) => s + x.homepass, 0))} homes, {rp(counts[k].reduce((s, x) => s + x.margin_m, 0))} profit a month</div>
           </button>
@@ -98,7 +97,7 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
                 <div><div className="mono small muted">{a.code}</div><div className="strong" style={{ fontSize: 15 }}>{a.name}</div></div>
                 <Badge tone={ACTION[a.action].tone}><span aria-hidden>{ACTION[a.action].icon}</span> {ACTION[a.action].label}</Badge>
               </div>
-              <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+              <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 <Mini k="Homes" v={fmtInt(a.homepass)} />
                 <Mini k="Customers" v={fmtInt(a.subs)} />
                 <Mini k="Live for" v={`${a.age} months`} />
@@ -116,16 +115,16 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
                   <div className="strong">{detail.diagnosis.verdict}</div>
                   <div className="small strong muted" style={{ textTransform: 'uppercase', letterSpacing: '.12em' }}>Likely cause and what to do</div>
                   {detail.diagnosis.drivers.map((d, i) => (
-                    <div key={i} style={{ borderLeft: '3px solid var(--brand)', paddingLeft: 10 }}>
+                    <div key={i} style={{ background: 'var(--panel-alt)', borderRadius: 6, padding: '8px 12px' }}>
                       <div className="strong">{d.driver}</div>
                       <div className="small muted">{d.evidence}</div>
                       <div className="small" style={{ marginTop: 2 }}>→ {d.lever}</div>
                     </div>
                   ))}
                   <div className="hr" />
-                  <button className="btn" onClick={writeNote} disabled={loadingNote}><Sparkles size={14} /> {loadingNote ? 'Writing…' : 'Write a summary for management (AI)'}</button>
+                  <button className="btn" onClick={writeNote} disabled={loadingNote}>{loadingNote ? 'Writing…' : 'Write a summary for management (AI)'}</button>
                   {note && (note.text
-                    ? <div className="note"><div>{note.text}</div><div className="small muted" style={{ marginTop: 6 }}>Written by {note.model}. Every number was checked against the data.</div></div>
+                    ? <div className="note"><div>{note.text}</div><div className="small muted" style={{ marginTop: 8 }}>Written by {note.model}. Every number was checked against the data.</div></div>
                     : <div className="note">No AI summary: {note.reason === 'llm_unavailable' ? 'the AI is unavailable right now' : note.grounded === false ? 'it used numbers not in the data, so it was thrown away' : note.reason}. The analysis above still holds.</div>)}
                 </>
               ) : <div className="skeleton" style={{ height: 200 }} />}
@@ -138,5 +137,5 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
 }
 
 function Mini({ k, v }: { k: string; v: string }) {
-  return <div style={{ background: 'var(--panel-alt)', borderRadius: 6, padding: '5px 8px' }}><div className="small muted">{k}</div><div className="strong">{v}</div></div>
+  return <div style={{ background: 'var(--panel-alt)', borderRadius: 6, padding: '4px 8px' }}><div className="small muted">{k}</div><div className="strong">{v}</div></div>
 }

@@ -84,13 +84,13 @@ export function LineChart({
           <div className="strong" style={{ marginBottom: 4 }}>{xLabel ? `${xLabel}: ` : ''}{xFormat(hx)}</div>
           {tipRows.sort((a, b) => b.p!.y - a.p!.y).map(({ s, p }) => (
             <div key={s.key} className="row between" style={{ gap: 12 }}>
-              <span className="row" style={{ gap: 6 }}><span style={{ width: 10, height: s.dashed ? 2 : 3, background: s.color, borderRadius: 2 }} />{s.label}</span>
+              <span className="row" style={{ gap: 8 }}><span style={{ width: 10, height: s.dashed ? 2 : 3, background: s.color, borderRadius: 2 }} />{s.label}</span>
               <span className="strong">{yFormat(p!.y)}</span>
             </div>
           ))}
         </div>
       )}
-      <div className="legend" style={{ padding: '6px 0 0 ' + m.l + 'px' }}>
+      <div className="legend" style={{ padding: '8px 0 0 ' + m.l + 'px' }}>
         {series.map(s => (
           <span key={s.key} className="k"><span style={{ width: 14, height: 0, borderTop: `${s.emphasis ? 3 : 2}px ${s.dashed ? 'dashed' : 'solid'} ${s.color}` }} />{s.label}</span>
         ))}

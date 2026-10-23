@@ -22,7 +22,6 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Choosing the next areas to build</div>
           <h1 className="page-title">RFS desktop study</h1>
           <p className="page-sub">Where should the next fiber go?</p>
         </div>

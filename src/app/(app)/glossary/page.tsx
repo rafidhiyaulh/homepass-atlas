@@ -75,13 +75,12 @@ export default async function Page() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Terms in one line</div>
           <h1 className="page-title">Glossary</h1>
           <p className="page-sub">Every term used on this site, with a benchmark.</p>
         </div>
       </div>
       <GlossaryTable entries={E} />
-      <p className="disclaimer" style={{ marginTop: 10 }}>&quot;This app&quot; figures use sample data. Market figures cite their source.</p>
+      <p className="disclaimer" style={{ marginTop: 12 }}>&quot;This app&quot; figures use sample data. Market figures cite their source.</p>
     </>
   )
 }

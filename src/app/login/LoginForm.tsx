@@ -5,8 +5,8 @@ import { signIn } from './actions'
 export function LoginForm() {
   const [state, action, pending] = useActionState(signIn, null)
   return (
-    <div style={{ marginTop: 18 }}>
-      <div className="eyebrow" style={{ marginBottom: 8 }}>Try it</div>
+    <div style={{ marginTop: 16 }}>
+      <h2 className="card-title" style={{ marginBottom: 8 }}>Try it</h2>
       <form action={action} className="stack">
         <button className="btn btn-primary" name="demo" value="planner" disabled={pending} style={{ width: '100%', justifyContent: 'center' }}>
           Enter as Planner
@@ -22,8 +22,8 @@ export function LoginForm() {
         <input className="input" name="password" type="password" placeholder="Password" autoComplete="current-password" style={{ width: '100%' }} />
         <button className="btn" disabled={pending} style={{ width: '100%', justifyContent: 'center' }}>Sign in</button>
       </form>
-      {state?.error && <p role="alert" style={{ color: 'var(--crit)', marginTop: 10, fontWeight: 600 }}>{state.error}</p>}
-      <p className="small muted" style={{ marginTop: 10 }}>A partner only sees its own areas.</p>
+      {state?.error && <p role="alert" style={{ color: 'var(--crit)', marginTop: 12, fontWeight: 600 }}>{state.error}</p>}
+      <p className="small muted" style={{ marginTop: 12 }}>A partner only sees its own areas.</p>
     </div>
   )
 }

@@ -65,7 +65,7 @@ export function HygieneHome({ partners, role, myPartner }: { partners: Partner[]
     <div className="cols-2">
       <section className="card">
         <div className="card-head"><div><h2 className="card-title">Checked files</h2><div className="card-sub">Newest first. Same file twice reuses the result.</div></div></div>
-        <div className="table-wrap" style={{ marginTop: 10 }}>
+        <div className="table-wrap" style={{ marginTop: 12 }}>
           <table className="data">
             <thead><tr><th>File</th><th>Partner</th><th>Status</th><th className="num">Shapes</th><th>Result</th><th>Uploaded</th></tr></thead>
             <tbody>
@@ -115,7 +115,7 @@ export function HygieneHome({ partners, role, myPartner }: { partners: Partner[]
             onDrop={e => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f && canUpload && !busy) upload(f) }}
           >
             <UploadCloud size={26} style={{ color: 'var(--accent)' }} />
-            <div className="strong" style={{ marginTop: 6 }}>{busy ?? 'Drop a KMZ here or click to choose'}</div>
+            <div className="strong" style={{ marginTop: 8 }}>{busy ?? 'Drop a KMZ here or click to choose'}</div>
             <div className="small muted">Stored privately and scanned for unsafe content.</div>
             <input ref={input} type="file" accept=".kmz,.kml" hidden onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
           </div>

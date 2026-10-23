@@ -44,13 +44,13 @@ export default async function Overview() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Jakarta and surrounding cities, data up to {asOf}</div>
           <h1 className="page-title">Market overview</h1>
           <p className="page-sub">
             {me.role === 'partner'
               ? 'Partner view: only your own areas.'
               : 'The home broadband business on one screen.'}
           </p>
+          <p className="page-meta">Jakarta and nearby cities, data up to {asOf}</p>
         </div>
         <div className="toolbar">
           <Link className="btn" href="/hygiene">Check a partner KMZ</Link>
