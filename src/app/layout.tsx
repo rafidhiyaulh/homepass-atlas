@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -12,14 +11,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-// Applies the stored theme before first paint (no flash). Static string, no user input.
-const themeScript = `try{var t=localStorage.getItem('atlas-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}`
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${jakarta.variable} ${mono.variable}`} suppressHydrationWarning>
       <body>
-        <Script id="atlas-theme" strategy="beforeInteractive">{themeScript}</Script>
         {children}
       </body>
     </html>

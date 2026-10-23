@@ -1,7 +1,7 @@
 """Aggregate Overture Maps building footprints (Google Open Buildings + Microsoft + OSM) for the
 Jabodetabek core into H3 resolution-8 cells. Only aggregates leave this script; no footprints are stored.
 
-Output: scripts/data/h3_buildings.parquet  (h3, buildings, footprint_m2, small, medium, large)
+Output: scripts/data/h3_buildings.parquet  (h3, buildings, footprint_m2, tiny/small/medium/large counts and areas)
 """
 import sys, time, duckdb
 
@@ -28,7 +28,9 @@ COPY (
          count(*) FILTER (WHERE m2 BETWEEN 25 AND 500) AS small,    -- landed houses / ruko
          count(*) FILTER (WHERE m2 > 500 AND m2 <= 5000) AS medium, -- MDU / apartments / commercial
          count(*) FILTER (WHERE m2 > 5000) AS large,
-         sum(m2) FILTER (WHERE m2 > 500 AND m2 <= 5000) AS medium_m2
+         sum(m2) FILTER (WHERE m2 > 500 AND m2 <= 5000) AS medium_m2,
+         sum(m2) FILTER (WHERE m2 BETWEEN 25 AND 500) AS small_m2,  -- avg house size: income proxy without warehouses
+         sum(m2) FILTER (WHERE m2 > 5000) AS large_m2
   FROM b GROUP BY 1
 ) TO '{OUT}' (FORMAT parquet)
 """)

@@ -30,6 +30,11 @@ export function Shell({ me, children }: { me: { display_name: string; role: stri
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null)
 
   useEffect(() => {
+    // the OS preference applies by default (pure CSS); an explicit choice is remembered per browser
+    try {
+      const saved = localStorage.getItem('atlas-theme')
+      if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved
+    } catch {}
     const t = document.documentElement.dataset.theme
     setTheme(t === 'dark' || t === 'light' ? t : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   }, [])

@@ -17,9 +17,10 @@ from sklearn.metrics import mean_absolute_error, r2_score
 S = "scripts/data/seed"
 FEATURES = {
     "homepass_log": "Home-passes (log)",
-    "avg_bldg_m2": "Avg building size",
+    "avg_home_m2": "Avg house size",
     "density": "Building density",
     "mdu_share": "MDU / high-rise share",
+    "large_share": "Industrial / large-site share",
     "dist_cbd_km": "Distance to CBD",
     "competitors": "Competing fiber brands",
 }

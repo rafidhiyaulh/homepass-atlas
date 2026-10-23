@@ -43,8 +43,12 @@ for r in b.itertuples():
     # home-pass heuristic: small footprints ~ one household each; mid-size buildings (MDU, ruko blocks,
     # apartments) ~ half residential, one unit per 120 m2 of footprint, assuming ~3 floors
     hp = int(round(r.small * 0.9 + medium_m2 * 0.5 * 3 / 120))
+    small_m2 = 0.0 if pd.isna(r.small_m2) else float(r.small_m2)
+    large_m2 = 0.0 if pd.isna(r.large_m2) else float(r.large_m2)
     rows.append(dict(h3=r.h3, kota=k, lat=lat, lng=lng, buildings=int(r.buildings), homepass_est=hp,
-                     footprint_m2=float(r.footprint_m2), mdu_share=medium_m2 / max(float(r.footprint_m2), 1)))
+                     footprint_m2=float(r.footprint_m2), mdu_share=medium_m2 / max(float(r.footprint_m2), 1),
+                     avg_home_m2=small_m2 / r.small if r.small else np.nan,
+                     large_share=large_m2 / max(float(r.footprint_m2), 1)))
 cells = pd.DataFrame(rows)
 
 def hav(lat1, lng1, lat2, lng2):
@@ -54,6 +58,7 @@ def hav(lat1, lng1, lat2, lng2):
 
 cells["dist_cbd_km"] = [hav(CBD[0], CBD[1], a, o) for a, o in zip(cells.lat, cells.lng)]
 cells["avg_bldg_m2"] = cells.footprint_m2 / cells.buildings
+cells["avg_home_m2"] = cells.avg_home_m2.fillna(cells.avg_home_m2.median())
 cells["density"] = cells.buildings / h3.average_hexagon_area(8, unit="km^2")
 # synthetic competitor presence: the incumbent is everywhere, challengers follow density
 lam = 0.6 + 1.6 * (cells.density / cells.density.quantile(0.9)).clip(0, 1.5)
@@ -63,8 +68,10 @@ def z(s):
     return (s - s.mean()) / s.std()
 
 # ---- TRUTH: take-up ceiling per cell (what the ML model will try to recover)
-logit_cap = (-1.15 + 0.55 * z(np.log(cells.avg_bldg_m2)) - 0.32 * (cells.competitors - 2)
-             - 0.035 * cells.dist_cbd_km - 0.9 * cells.mdu_share + 0.25 * z(np.log1p(cells.homepass_est))
+# house size is the income proxy; large industrial / warehouse sites hold few households that buy
+logit_cap = (-1.15 + 0.55 * z(np.log(cells.avg_home_m2)) - 0.32 * (cells.competitors - 2)
+             - 0.035 * cells.dist_cbd_km - 0.9 * cells.mdu_share - 1.4 * cells.large_share
+             + 0.25 * z(np.log1p(cells.homepass_est))
              + rng.normal(0, 0.25, len(cells)))
 cells["cap_true"] = 1 / (1 + np.exp(-logit_cap))
 cells = cells.reset_index(drop=True)
@@ -131,7 +138,7 @@ for a in areas:
     sub = cells[cells.h3.isin(a["cells"])]
     lc = math.log(a["cap_area"] / (1 - a["cap_area"])) + p["q"] + rng.normal(0, 0.3)
     cap = 1 / (1 + math.exp(-lc))
-    arpu = 255000 * (1 + 0.08 * float(z(np.log(cells.avg_bldg_m2))[sub.index].mean())) * rng.uniform(0.95, 1.05)
+    arpu = 255000 * (1 + 0.08 * float(z(np.log(cells.avg_home_m2))[sub.index].mean())) * rng.uniform(0.95, 1.05)
     churn_rate = rng.uniform(0.012, 0.03)
     subs_prev = 0
     start = pd.Timestamp(a["rfs_date"])
@@ -170,5 +177,5 @@ json.dump([{k: (v.isoformat() if k == "rfs_date" else v) for k, v in a.items() i
           open(f"{OUT}/areas.json", "w"))
 json.dump(monthly, open(f"{OUT}/monthly.json", "w"))
 cells[["h3", "buildings", "homepass_est", "footprint_m2", "mdu_share", "dist_cbd_km", "competitors", "avg_bldg_m2",
-       "density", "cap_true"]].to_parquet(f"{OUT}/features.parquet")
+       "avg_home_m2", "large_share", "density", "cap_true"]].to_parquet(f"{OUT}/features.parquet")
 pd.DataFrame(train).to_parquet(f"{OUT}/train.parquet")
