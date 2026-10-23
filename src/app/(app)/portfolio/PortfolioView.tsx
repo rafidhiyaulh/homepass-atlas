@@ -4,7 +4,6 @@ import { Sparkles } from 'lucide-react'
 import type { Geometry } from 'geojson'
 import { Map, type Layer } from '@/components/Map'
 import { ACTION, Badge, PartnerDot } from '@/components/Badge'
-import { Kpi } from '@/components/Kpi'
 import { LineChart } from '@/components/charts/LineChart'
 import { fmtInt, fmtPct, months, rp } from '@/lib/format'
 
@@ -37,10 +36,12 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
     id: 'a', shapes: areas.map(a => ({ id: a.id, geom: a.geom, cls: `p-${a.action}`, fillOpacity: a.action === tab ? 0.55 : 0.12, weight: a.action === tab ? 1.4 : 0.6, tip: `${a.code} · ${ACTION[a.action].label} · ${fmtPct(a.vs_plan, 0)} of plan` })),
   }], [areas, tab])
 
+  const select = (id: number | null) => { setSel(id); setDetail(null); setNote(null) }
   useEffect(() => {
-    setDetail(null); setNote(null)
     if (sel == null) return
-    fetch(`/api/portfolio/${sel}`).then(r => r.json()).then(setDetail)
+    let alive = true
+    fetch(`/api/portfolio/${sel}`).then(r => r.json()).then(j => { if (alive) setDetail(j) })
+    return () => { alive = false }
   }, [sel])
 
   async function writeNote() {
@@ -57,7 +58,7 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
     <>
       <div className="kpis">
         {ORDER.map(k => (
-          <button key={k} onClick={() => { setTab(k); setSel(null) }} className="kpi" style={{ textAlign: 'left', cursor: 'pointer', borderTopColor: `var(--chart-${k === 'maintain' ? 'good' : k === 'optimize' ? 'warn' : k === 'exit' ? 'bad' : 'neutral'})`, outline: tab === k ? '2px solid var(--brand)' : undefined }}>
+          <button key={k} onClick={() => { setTab(k); select(null) }} className="kpi" style={{ textAlign: 'left', cursor: 'pointer', borderTopColor: `var(--chart-${k === 'maintain' ? 'good' : k === 'optimize' ? 'warn' : k === 'exit' ? 'bad' : 'neutral'})`, outline: tab === k ? '2px solid var(--brand)' : undefined }}>
             <div className="label"><span aria-hidden>{ACTION[k].icon}</span> {ACTION[k].label}</div>
             <div className="value">{counts[k].length}</div>
             <div className="sub">{fmtInt(counts[k].reduce((s, x) => s + x.homepass, 0))} HP · {rp(counts[k].reduce((s, x) => s + x.margin_m, 0))}/mo margin</div>
@@ -68,13 +69,13 @@ export function PortfolioView({ areas }: { areas: Area[] }) {
       <div className="cols-2">
         <section className="card">
           <div className="card-head"><div><h2 className="card-title">{ACTION[tab].label} · {rows.length} areas</h2><div className="card-sub">Sorted by gap to plan. Click an area for the diagnosis.</div></div></div>
-          <Map layers={layers} selected={sel} onSelect={(_, id) => setSel(Number(id))} height={340} fitKey="portfolio" />
+          <Map layers={layers} selected={sel} onSelect={(_, id) => select(Number(id))} height={340} fitKey="portfolio" />
           <div className="table-wrap" style={{ maxHeight: 420 }}>
             <table className="data">
               <thead><tr><th>Area</th><th>Partner</th><th className="num">Age</th><th className="num">Take-up</th><th className="num">vs plan</th><th className="num">Payback</th><th>Why</th></tr></thead>
               <tbody>
                 {rows.map(r => (
-                  <tr key={r.id} className={`clickable${sel === r.id ? ' is-sel' : ''}`} onClick={() => setSel(r.id)}>
+                  <tr key={r.id} className={`clickable${sel === r.id ? ' is-sel' : ''}`} onClick={() => select(r.id)}>
                     <td><span className="mono small">{r.code}</span><div className="small muted">{r.kota}</div></td>
                     <td><PartnerDot id={r.partner_id} code={r.partner_code} /></td>
                     <td className="num">{r.age} mo</td>

@@ -27,25 +27,20 @@ const NAV = [
 export function Shell({ me, children }: { me: { display_name: string; role: string; email?: string }; children: React.ReactNode }) {
   const path = usePathname()
   const [open, setOpen] = useState(false)
-  const [theme, setTheme] = useState<'light' | 'dark' | null>(null)
-
   useEffect(() => {
     // the OS preference applies by default (pure CSS); an explicit choice is remembered per browser
     try {
       const saved = localStorage.getItem('atlas-theme')
       if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved
     } catch {}
-    const t = document.documentElement.dataset.theme
-    setTheme(t === 'dark' || t === 'light' ? t : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   }, [])
-  useEffect(() => setOpen(false), [path])
 
   const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    document.documentElement.dataset.theme = next
+    const root = document.documentElement
+    const now = root.dataset.theme ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    const next = now === 'dark' ? 'light' : 'dark'
+    root.dataset.theme = next
     try { localStorage.setItem('atlas-theme', next) } catch {}
-    setTheme(next)
-    window.dispatchEvent(new Event('atlas-theme'))
   }
 
   const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(href))
@@ -66,7 +61,7 @@ export function Shell({ me, children }: { me: { display_name: string; role: stri
             <div key={g.group}>
               <div className="group">{g.group}</div>
               {g.items.map(i => (
-                <Link key={i.href} href={i.href} className={`nav-item${active(i.href) ? ' is-active' : ''}`}>
+                <Link key={i.href} href={i.href} onClick={() => setOpen(false)} className={`nav-item${active(i.href) ? ' is-active' : ''}`}>
                   <i.icon size={15} strokeWidth={2} /> {i.label}
                 </Link>
               ))}
@@ -84,7 +79,7 @@ export function Shell({ me, children }: { me: { display_name: string; role: stri
           <span className="crumb">{current?.label ?? 'HomePass Atlas'}</span>
           <span className="spacer" />
           <button className="btn btn-ghost btn-sm" onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            <Sun size={15} className="when-dark" /><Moon size={15} className="when-light" />
           </button>
           <span className="small" style={{ textAlign: 'right', lineHeight: 1.25 }}>
             <span className="strong">{me.display_name}</span><br />

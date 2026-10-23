@@ -101,9 +101,14 @@ function polygonsOf(g: Geometry | null): Polygon[] {
 export function parseKml(text: string) {
   if (/<!DOCTYPE|<!ENTITY/i.test(text)) throw new UploadError('dtd_rejected', 'KML with a DTD/entities is not accepted')
   const errors: string[] = []
-  const doc = new DOMParser({
-    onError: (level, msg) => { if (level === 'fatalError') errors.push(msg) },
-  }).parseFromString(text, 'text/xml')
+  let doc
+  try {
+    doc = new DOMParser({
+      onError: (level, msg) => { if (level === 'fatalError') errors.push(msg) },
+    }).parseFromString(text, 'text/xml')
+  } catch {
+    errors.push('parse error')   // xmldom throws on fatal errors
+  }
   if (errors.length || !doc?.documentElement) throw new UploadError('bad_xml', 'KML is not well-formed XML')
 
   const tree: Root = kmlWithFolders(doc as unknown as Document)

@@ -233,6 +233,15 @@ th button.sort { all: unset; cursor: pointer; }
 .p-ramping { stroke: var(--chart-neutral); fill: var(--chart-neutral); }
 .p-sel { stroke: var(--ink) !important; stroke-width: 3px; }
 
+/* theme toggle icon follows the effective theme without React state */
+.when-dark { display: none; }
+:root[data-theme="dark"] .when-dark { display: inline; }
+:root[data-theme="dark"] .when-light { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .when-dark { display: inline; }
+  :root:not([data-theme="light"]) .when-light { display: none; }
+}
+
 /* ------------------------------------------------------------ misc */
 .muted { color: var(--muted); }
 .small { font-size: 11.5px; }

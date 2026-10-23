@@ -26,16 +26,17 @@ export function HygieneHome({ partners, role, myPartner }: { partners: Partner[]
   const [drag, setDrag] = useState(false)
   const input = useRef<HTMLInputElement>(null)
 
-  const load = useCallback(async () => {
-    const r = await fetch('/api/batches', { cache: 'no-store' })
-    if (r.ok) setBatches((await r.json()).batches)
+  const load = useCallback(() => {
+    fetch('/api/batches', { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).then(j => { if (j) setBatches(j.batches) })
   }, [])
-  useEffect(() => { load() }, [load])
+  // poll while anything is still being processed
+  const busyBatches = batches === null || batches.some(b => b.status !== 'done' && b.status !== 'failed')
   useEffect(() => {
-    if (!batches?.some(b => b.status !== 'done' && b.status !== 'failed')) return
+    if (!busyBatches) return
     const t = setInterval(load, 1500)
-    return () => clearInterval(t)
-  }, [batches, load])
+    const first = setTimeout(load, 0)
+    return () => { clearInterval(t); clearTimeout(first) }
+  }, [busyBatches, load])
 
   async function upload(file: File) {
     setError(null)

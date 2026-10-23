@@ -31,22 +31,25 @@ export function BatchView({ id, role }: { id: string; role: string }) {
   const [filter, setFilter] = useState<string>('all')
   const [promoted, setPromoted] = useState<number | null>(null)
 
-  const load = useCallback(async () => {
-    const r = await fetch(`/api/batches/${id}`, { cache: 'no-store' })
-    const j = await r.json()
-    if (!r.ok) { setErr(j.error ?? 'Not found'); return }
-    setD(j)
+  const load = useCallback(() => {
+    fetch(`/api/batches/${id}`, { cache: 'no-store' })
+      .then(async r => ({ ok: r.ok, j: await r.json() }))
+      .then(({ ok, j }) => (ok ? setD(j) : setErr(j.error ?? 'Not found')))
   }, [id])
-  useEffect(() => { load() }, [load])
   const done = d?.batch.status === 'done'
+  const settled = done || d?.batch.status === 'failed' || err != null
+  // poll until the batch is done or failed
   useEffect(() => {
-    if (!d || done || d.batch.status === 'failed') return
+    if (settled) return
+    const first = setTimeout(load, 0)
     const t = setInterval(load, 1000)
-    return () => clearInterval(t)
-  }, [d, done, load])
+    return () => { clearTimeout(first); clearInterval(t) }
+  }, [settled, load])
   useEffect(() => {
     if (!done) return
-    fetch(`/api/batches/${id}/geo`).then(r => r.json()).then(setGeo)
+    let alive = true
+    fetch(`/api/batches/${id}/geo`).then(r => r.json()).then(g => { if (alive) setGeo(g) })
+    return () => { alive = false }
   }, [done, id])
 
   const layers: Layer[] = useMemo(() => {

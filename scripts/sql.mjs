@@ -8,7 +8,6 @@ const args = process.argv.slice(2)
 const text = args[0] === '-f' ? readFileSync(args[1], 'utf8') : args.join(' ')
 try {
   const res = await sql.unsafe(text).simple()
-  const sets = Array.isArray(res[0]) || res.length === 0 ? res : [res]
   for (const rows of [].concat(Array.isArray(res) && res.every(Array.isArray) ? res : [res])) {
     if (rows.length) console.table(rows.slice(0, 60))
   }
