@@ -1,6 +1,6 @@
 import 'server-only'
 
-// Gemini through its OpenAI-compatible endpoint (same pattern as Perisai): LLM_BASE_URL, LLM_API_KEY, LLM_MODEL.
+// Gemini through its OpenAI-compatible endpoint: LLM_BASE_URL, LLM_API_KEY, LLM_MODEL.
 // No key => every caller falls back to its deterministic output. The model only ever sees aggregates
 // (no personal data), and free text it writes must pass `grounded()` before it is shown.
 
