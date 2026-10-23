@@ -1,6 +1,6 @@
 # HomePass Atlas
 
-A working prototype of the tools an **HBB Market Planning & Insight** analyst uses: keep the home-pass
+A working prototype of the tools an **HBB Planning & Profitability** analyst uses: keep the home-pass
 database clean, find the next RFS areas, track profitability by partner / cluster / cohort, and decide
 which areas to maintain, optimize or exit.
 

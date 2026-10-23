@@ -56,7 +56,7 @@ export function Shell({ me, children }: { me: { display_name: string; role: stri
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="logo-dark" src="/logo-ioh-business-dark.png" alt="Indosat Ooredoo Hutchison" />
           <div className="product">HomePass Atlas</div>
-          <div className="sub">HBB Market Planning &amp; Insight</div>
+          <div className="sub">HBB Planning &amp; Profitability</div>
         </div>
         <nav>
           {NAV.map(g => (

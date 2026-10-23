@@ -7,7 +7,7 @@ const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', weigh
 
 export const metadata: Metadata = {
   title: { default: 'HomePass Atlas', template: '%s | HomePass Atlas' },
-  description: 'HBB market planning & insight: boundary hygiene, RFS desktop study, profitability and portfolio actions. Concept prototype.',
+  description: 'HBB planning & profitability: boundary hygiene, RFS desktop study, profitability and portfolio actions. Concept prototype.',
   robots: { index: false, follow: false },
 }
 

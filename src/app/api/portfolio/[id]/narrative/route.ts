@@ -19,7 +19,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     const diagnosis = diagnose(facts)
     const source = { facts, diagnosis }
     const text = await chat([
-      { role: 'system', content: 'You are a telecom home-broadband market planning analyst at Indosat. Write for the Head of HBB Market Planning. Plain English, no hype, no markdown headings.' },
+      { role: 'system', content: 'You are a telecom home-broadband market planning analyst at Indosat. Write for the HBB Planning & Profitability team. Plain English, no hype, no markdown headings.' },
       { role: 'user', content:
         'Write exactly 2 short, friendly sentences, at most 10 words each. First: the verdict and main cause. Second: the first action. ' +
         'Use ONLY the facts in the JSON. Do not invent numbers, dates, competitors or partners. Keep percentages exactly as given.\n' +
