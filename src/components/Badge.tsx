@@ -33,11 +33,12 @@ export function StatusBadge({ status }: { status: string | null }) {
   return <Badge tone={s.tone} title={s.help}><span aria-hidden>{s.icon}</span>{s.label}</Badge>
 }
 
-export function PartnerDot({ id, code }: { id: number; code?: string }) {
+export function PartnerDot({ id, code, name }: { id: number; code?: string; name?: string }) {
   return (
     <span className="row" style={{ gap: 6, display: 'inline-flex' }}>
       <span style={{ width: 9, height: 9, borderRadius: 3, background: `var(--partner-${id})`, flex: 'none' }} />
       {code && <span className="mono" style={{ fontSize: 11.5 }}>{code}</span>}
+      {name && <span>{name}</span>}
     </span>
   )
 }

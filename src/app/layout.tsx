@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -17,10 +18,10 @@ const themeScript = `try{var t=localStorage.getItem('atlas-theme');if(t==='dark'
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${jakarta.variable} ${mono.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
-      <body>{children}</body>
+      <body>
+        <Script id="atlas-theme" strategy="beforeInteractive">{themeScript}</Script>
+        {children}
+      </body>
     </html>
   )
 }

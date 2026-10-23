@@ -117,7 +117,7 @@ export function BatchView({ id, role }: { id: string; role: string }) {
             <Kpi label="Clean polygons" value={`${cleanN} / ${batch.polygons}`} sub={`${fmtPct(cleanN / batch.polygons, 0)} usable as-is (touch-only counts as clean)`} accent="var(--chart-good)" />
             <Kpi label="Polygons with issues" value={fmtInt(batch.polygons - cleanN)} sub={`${bs.overlap ?? 0} overlap · ${bs.duplicate ?? 0} duplicate · ${bs.invalid ?? 0} self-intersect · ${bs.sliver ?? 0} sliver`} accent="var(--chart-serious)" />
             <Kpi label="Overlapping area" value={m2(st.overlap_m2)} sub={`${fmtPct(st.overlap_m2 / st.area_m2)} of submitted area`} accent="var(--chart-bad)" />
-            <Kpi label="Home-passes double counted" value={fmtInt(st.homepass_dup)} sub={`of ${fmtInt(st.homepass_est)} estimated in this file`} accent="var(--brand)" />
+            <Kpi label="HP double counted" value={fmtInt(st.homepass_dup)} sub={`of ${fmtInt(st.homepass_est)} estimated in this file`} accent="var(--brand)" />
             <Kpi label="Hits on live registry" value={fmtInt(st.registry_hits)} sub="polygons overlapping areas already RFS" accent="var(--ink)" />
           </div>
 

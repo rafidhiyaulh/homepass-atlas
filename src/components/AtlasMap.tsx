@@ -62,8 +62,8 @@ export default function AtlasMap({
   return (
     <MapContainer center={[-6.23, 106.83]} zoom={11} style={{ height }} className="map" scrollWheelZoom preferCanvas={false}>
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a> · buildings: Overture Maps'
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · buildings: Overture Maps'
         maxZoom={19}
       />
       <Fit bounds={bounds} fitKey={fitKey} />

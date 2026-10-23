@@ -19,7 +19,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       const registry = await tx`
         select r.id, r.code, r.partner_id, ST_AsGeoJSON(ST_SimplifyPreserveTopology(r.geom, 0.00005), 6)::json as geom
         from atlas.areas r
-        where r.geom && (select ST_Expand(ST_Extent(geom)::geometry, 0.02) from atlas.boundaries where batch_id = ${id})`
+        where exists (select 1 from atlas.boundaries b where b.batch_id = ${id} and ST_DWithin(r.geom, b.geom, 0.006))`
       return { boundaries, overlaps, registry }
     })
     return Response.json(data)
